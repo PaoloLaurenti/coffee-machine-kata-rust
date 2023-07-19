@@ -44,17 +44,30 @@ impl Machine<'_> {
     pub fn dispense(&self, beverage_request: BeverageRequest) {
         let beverage_type = &beverage_request.beverage_type;
         let money_amount = beverage_request.money_amount;
+        let sugar_amount = beverage_request.sugar_amount;
+
         let missing_money = how_much_money_is_missing(beverage_type, money_amount);
 
         if missing_money > 0 {
-            let formatted_missing_money = missing_money as f32 / 100.0;
-            self.drink_maker
-                .execute(format!("M:{formatted_missing_money}€"));
+            self.ask_drink_maker_to_show_missing_money(missing_money);
             return;
         }
 
-        let drink_maker_cmd =
-            build_drink_maker_command(beverage_type, beverage_request.sugar_amount);
+        self.ask_drink_maker_to_dispense_beverage(beverage_type, sugar_amount);
+    }
+
+    fn ask_drink_maker_to_show_missing_money(&self, missing_money: i32) {
+        let formatted_missing_money = missing_money as f32 / 100.0;
+        self.drink_maker
+            .execute(format!("M:{formatted_missing_money}€"));
+    }
+
+    fn ask_drink_maker_to_dispense_beverage(
+        &self,
+        beverage_type: &BeverageType,
+        sugar_amount: SugarAmount,
+    ) {
+        let drink_maker_cmd = build_drink_maker_command(beverage_type, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd)
     }
 }
