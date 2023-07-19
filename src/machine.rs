@@ -15,13 +15,19 @@ pub enum SugarAmount {
 pub struct BeverageRequest {
     beverage_type: BeverageType,
     sugar_amount: SugarAmount,
+    _money_amount: u32,
 }
 
 impl BeverageRequest {
-    pub fn new(beverage_type: BeverageType, sugar_amount: SugarAmount) -> BeverageRequest {
+    pub fn new(
+        beverage_type: BeverageType,
+        sugar_amount: SugarAmount,
+        _money_amount: u32,
+    ) -> BeverageRequest {
         BeverageRequest {
             beverage_type,
             sugar_amount,
+            _money_amount: 0,
         }
     }
 }
@@ -95,7 +101,7 @@ mod machine_tests {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero);
+        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, 100000);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -114,7 +120,7 @@ mod machine_tests {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(BeverageType::Coffe, sugar_amount);
+        let beverage_request = BeverageRequest::new(BeverageType::Coffe, sugar_amount, 100000);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -124,20 +130,38 @@ mod machine_tests {
     }
 
     #[test_case(SugarAmount::One, "0" ; "stick with one sugar")]
-    #[test_case(SugarAmount::Two, "0" ; "stick with  two sugars")]
-    fn machine_dispenses_bverage_with_stick_when_some_sugar_is_requested(
+    #[test_case(SugarAmount::Two, "0" ; "stick with two sugars")]
+    fn machine_dispenses_beverage_with_stick_when_some_sugar_is_requested(
         sugar_amount: SugarAmount,
         expected_stick_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(BeverageType::Coffe, sugar_amount);
+        let beverage_request = BeverageRequest::new(BeverageType::Coffe, sugar_amount, 100000);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
         assert_eq!(1, drink_maker_cmds.len());
         let stick_cmd_part = drink_maker_cmds[0].split(':').nth(2).unwrap();
         assert_eq!(stick_cmd_part, expected_stick_cmd_part)
+    }
+
+    #[test_case(BeverageType::Coffe, 60, "C::" ; "coffee costs 0.6€")]
+    #[test_case(BeverageType::Tea, 40, "T::" ; "tea costs 0.4€")]
+    #[test_case(BeverageType::HotChocolate, 50, "H::" ; "hot chocolate costs 0.5€")]
+    fn machine_dispense_coffee_only_when_given_money_is_enough(
+        beverage_type: BeverageType,
+        money_amount: u32,
+        expected_drink_maker_cmd: &str,
+    ) {
+        let drink_maker_spy = DrinkMakerSpy::new();
+        let machine = Machine::new(&drink_maker_spy);
+
+        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
+        machine.dispense(beverage_request);
+
+        let drink_maker_cmds = drink_maker_spy.get_received_commands();
+        assert_eq!(drink_maker_cmds, vec![String::from(expected_drink_maker_cmd)])
     }
 }
