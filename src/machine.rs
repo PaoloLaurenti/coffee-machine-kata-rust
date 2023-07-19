@@ -61,7 +61,7 @@ mod machine_tests {
         }
 
         pub fn get_received_commands(&self) -> Vec<String> {
-            self.received_commands.take()
+            self.received_commands.clone().take()
         }
     }
 
