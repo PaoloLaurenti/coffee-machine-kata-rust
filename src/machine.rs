@@ -2,17 +2,20 @@ use crate::drink_maker::DrinkMaker;
 
 pub enum BeverageType {
     Coffe,
+    Tea,
 }
 
 pub enum SugarQuantity {
     Zero,
 }
 
-pub struct BeverageRequest {}
+pub struct BeverageRequest {
+    beverage_type: BeverageType,
+}
 
 impl BeverageRequest {
-    pub fn new(_beverage_type: BeverageType, _sugar_quantity: SugarQuantity) -> BeverageRequest {
-        BeverageRequest {}
+    pub fn new(beverage_type: BeverageType, _sugar_quantity: SugarQuantity) -> BeverageRequest {
+        BeverageRequest { beverage_type }
     }
 }
 
@@ -25,8 +28,16 @@ impl Machine<'_> {
         Machine { drink_maker }
     }
 
-    pub fn dispense(&self, _beverage_request: BeverageRequest) {
-        self.drink_maker.pour(String::from("C::"));
+    pub fn dispense(&self, beverage_request: BeverageRequest) {
+        let drink_maker_cmd = build_drink_maker_command(beverage_request);
+        self.drink_maker.pour(drink_maker_cmd)
+    }
+}
+
+fn build_drink_maker_command(beverage_request: BeverageRequest) -> String {
+    match beverage_request.beverage_type {
+        BeverageType::Coffe => String::from("C::"),
+        BeverageType::Tea => String::from("T::"),
     }
 }
 
@@ -67,5 +78,17 @@ mod machine_tests {
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
         assert_eq!(drink_maker_cmds, vec![String::from("C::")])
+    }
+
+    #[test]
+    fn machine_dispense_tea_with_no_sugar() {
+        let drink_maker_spy = DrinkMakerSpy::new();
+        let machine = Machine::new(&drink_maker_spy);
+
+        let beverage_request = BeverageRequest::new(BeverageType::Tea, SugarQuantity::Zero);
+        machine.dispense(beverage_request);
+
+        let drink_maker_cmds = drink_maker_spy.get_received_commands();
+        assert_eq!(drink_maker_cmds, vec![String::from("T::")])
     }
 }
