@@ -8,15 +8,20 @@ pub enum BeverageType {
 
 pub enum SugarAmount {
     Zero,
+    One,
 }
 
 pub struct BeverageRequest {
     beverage_type: BeverageType,
+    sugar_amount: SugarAmount,
 }
 
 impl BeverageRequest {
-    pub fn new(beverage_type: BeverageType, _sugar_amount: SugarAmount) -> BeverageRequest {
-        BeverageRequest { beverage_type }
+    pub fn new(beverage_type: BeverageType, sugar_amount: SugarAmount) -> BeverageRequest {
+        BeverageRequest {
+            beverage_type,
+            sugar_amount,
+        }
     }
 }
 
@@ -36,10 +41,15 @@ impl Machine<'_> {
 }
 
 fn build_drink_maker_command(beverage_request: BeverageRequest) -> String {
+    let sugar_amount_cmd_part = match beverage_request.sugar_amount {
+        SugarAmount::Zero => "",
+        SugarAmount::One => "1",
+    };
+
     match beverage_request.beverage_type {
-        BeverageType::Coffe => String::from("C::"),
-        BeverageType::Tea => String::from("T::"),
-        BeverageType::HotChocolate => String::from("H::"),
+        BeverageType::Coffe => format!("C:{sugar_amount_cmd_part}:"),
+        BeverageType::Tea => format!("T:{sugar_amount_cmd_part}:"),
+        BeverageType::HotChocolate => format!("H:{sugar_amount_cmd_part}:"),
     }
 }
 
@@ -74,7 +84,7 @@ mod machine_tests {
     #[test_case(BeverageType::Coffe, "C::" ; "cofee")]
     #[test_case(BeverageType::Tea, "T::" ; "tea")]
     #[test_case(BeverageType::HotChocolate, "H::" ; "hot chocolate")]
-    fn machine_dispense_beverage_with_no_sugar(
+    fn machine_dispenses_beverage_with_no_sugar(
         beverage_type: BeverageType,
         expected_drink_maker_cmd: &str,
     ) {
@@ -89,5 +99,19 @@ mod machine_tests {
             drink_maker_cmds,
             vec![String::from(expected_drink_maker_cmd)]
         )
+    }
+
+    #[test]
+    fn machine_dispenses_beverage_with_one_sugar() {
+        let drink_maker_spy = DrinkMakerSpy::new();
+        let machine = Machine::new(&drink_maker_spy);
+
+        let beverage_request = BeverageRequest::new(BeverageType::Coffe, SugarAmount::One);
+        machine.dispense(beverage_request);
+
+        let drink_maker_cmds = drink_maker_spy.get_received_commands();
+        assert_eq!(1, drink_maker_cmds.len());
+        let sugar_amount_part = drink_maker_cmds[0].split(':').nth(1).unwrap();
+        assert_eq!(sugar_amount_part, "1")
     }
 }
