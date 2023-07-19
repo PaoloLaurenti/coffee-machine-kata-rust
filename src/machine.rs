@@ -3,6 +3,7 @@ use crate::drink_maker::DrinkMaker;
 pub enum BeverageType {
     Coffe,
     Tea,
+    HotChocolate,
 }
 
 pub enum SugarQuantity {
@@ -38,6 +39,7 @@ fn build_drink_maker_command(beverage_request: BeverageRequest) -> String {
     match beverage_request.beverage_type {
         BeverageType::Coffe => String::from("C::"),
         BeverageType::Tea => String::from("T::"),
+        BeverageType::HotChocolate => String::from("H::"),
     }
 }
 
@@ -45,6 +47,7 @@ fn build_drink_maker_command(beverage_request: BeverageRequest) -> String {
 mod machine_tests {
     use super::*;
     use std::cell::RefCell;
+    use test_case::test_case;
 
     struct DrinkMakerSpy {
         received_commands: RefCell<Vec<String>>,
@@ -68,27 +71,23 @@ mod machine_tests {
         }
     }
 
-    #[test]
-    fn machine_dispense_coffee_with_no_sugar() {
+    #[test_case(BeverageType::Coffe, "C::" ; "cofee")]
+    #[test_case(BeverageType::Tea, "T::" ; "tea")]
+    #[test_case(BeverageType::HotChocolate, "H::" ; "hot chocolate")]
+    fn machine_dispense_beverage_with_no_sugar(
+        beverage_type: BeverageType,
+        expected_drink_maker_cmd: &str,
+    ) {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(BeverageType::Coffe, SugarQuantity::Zero);
+        let beverage_request = BeverageRequest::new(beverage_type, SugarQuantity::Zero);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
-        assert_eq!(drink_maker_cmds, vec![String::from("C::")])
-    }
-
-    #[test]
-    fn machine_dispense_tea_with_no_sugar() {
-        let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
-
-        let beverage_request = BeverageRequest::new(BeverageType::Tea, SugarQuantity::Zero);
-        machine.dispense(beverage_request);
-
-        let drink_maker_cmds = drink_maker_spy.get_received_commands();
-        assert_eq!(drink_maker_cmds, vec![String::from("T::")])
+        assert_eq!(
+            drink_maker_cmds,
+            vec![String::from(expected_drink_maker_cmd)]
+        )
     }
 }
