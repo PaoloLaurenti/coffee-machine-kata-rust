@@ -6,7 +6,7 @@ pub enum BeverageType {
     HotChocolate,
 }
 
-pub enum SugarQuantity {
+pub enum SugarAmount {
     Zero,
 }
 
@@ -15,7 +15,7 @@ pub struct BeverageRequest {
 }
 
 impl BeverageRequest {
-    pub fn new(beverage_type: BeverageType, _sugar_quantity: SugarQuantity) -> BeverageRequest {
+    pub fn new(beverage_type: BeverageType, _sugar_amount: SugarAmount) -> BeverageRequest {
         BeverageRequest { beverage_type }
     }
 }
@@ -81,7 +81,7 @@ mod machine_tests {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarQuantity::Zero);
+        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
