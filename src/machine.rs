@@ -37,7 +37,7 @@ impl Machine<'_> {
 
     pub fn dispense(&self, beverage_request: BeverageRequest) {
         let drink_maker_cmd = build_drink_maker_command(beverage_request);
-        self.drink_maker.pour(drink_maker_cmd)
+        self.drink_maker.execute(drink_maker_cmd)
     }
 }
 
@@ -80,7 +80,7 @@ mod machine_tests {
     }
 
     impl DrinkMaker for DrinkMakerSpy {
-        fn pour(&self, command: String) {
+        fn execute(&self, command: String) {
             self.received_commands.borrow_mut().push(command);
         }
     }

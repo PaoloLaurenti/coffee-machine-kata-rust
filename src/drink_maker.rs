@@ -1,3 +1,3 @@
 pub trait DrinkMaker {
-  fn pour(&self, command: String);
+    fn execute(&self, command: String);
 }
