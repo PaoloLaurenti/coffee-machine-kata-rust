@@ -1,6 +1,4 @@
-pub trait DrinkMaker {
-    fn pour(&self, command: String);
-}
+use crate::drink_maker::DrinkMaker;
 
 pub enum BeverageType {
     Coffe,
