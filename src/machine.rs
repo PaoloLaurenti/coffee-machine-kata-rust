@@ -44,21 +44,26 @@ impl Machine<'_> {
     pub fn dispense(&self, beverage_request: BeverageRequest) {
         let beverage_type = &beverage_request.beverage_type;
         let money_amount = beverage_request.money_amount;
-        let is_money_enough = check_beverage_price(beverage_type, money_amount);
+        let missing_money = how_much_money_is_missing(beverage_type, money_amount);
 
-        if is_money_enough {
-            let drink_maker_cmd =
-                build_drink_maker_command(beverage_type, beverage_request.sugar_amount);
-            self.drink_maker.execute(drink_maker_cmd)
+        if missing_money > 0 {
+            let formatted_missing_money = missing_money as f32 / 100.0;
+            self.drink_maker
+                .execute(format!("M:{formatted_missing_money}€"));
+            return;
         }
+
+        let drink_maker_cmd =
+            build_drink_maker_command(beverage_type, beverage_request.sugar_amount);
+        self.drink_maker.execute(drink_maker_cmd)
     }
 }
 
-fn check_beverage_price(beverage_type: &BeverageType, money_amount: u32) -> bool {
+fn how_much_money_is_missing(beverage_type: &BeverageType, money_amount: u32) -> i32 {
     match beverage_type {
-        BeverageType::Coffee => money_amount >= 60,
-        BeverageType::Tea => money_amount >= 40,
-        BeverageType::HotChocolate => money_amount >= 50,
+        BeverageType::Coffee => 60 - money_amount as i32,
+        BeverageType::Tea => 40 - money_amount as i32,
+        BeverageType::HotChocolate => 50 - money_amount as i32,
     }
 }
 
@@ -183,12 +188,13 @@ mod machine_tests {
         )
     }
 
-    #[test_case(BeverageType::Coffee, 59; "coffee costs 0.6€")]
-    #[test_case(BeverageType::Tea, 39 ; "tea costs 0.4€")]
-    #[test_case(BeverageType::HotChocolate, 49 ; "hot chocolate costs 0.5€")]
+    #[test_case(BeverageType::Coffee, 59, "C::"; "coffee costs 0.6€")]
+    #[test_case(BeverageType::Tea, 39, "T::" ; "tea costs 0.4€")]
+    #[test_case(BeverageType::HotChocolate, 49, "H::" ; "hot chocolate costs 0.5€")]
     fn machine_does_not_dispense_beverages_when_given_money_is_not_enough(
         beverage_type: BeverageType,
         money_amount: u32,
+        dispense_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
@@ -197,6 +203,33 @@ mod machine_tests {
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
-        assert_eq!(drink_maker_cmds, Vec::<String>::new())
+        assert_eq!(
+            false,
+            drink_maker_cmds.contains(&dispense_drink_maker_cmd.to_string())
+        )
+    }
+
+    #[test_case(BeverageType::Coffee, 59, "M:0.01€"; "coffee costs 0.6€, missing 0.01€")]
+    #[test_case(BeverageType::Coffee, 1, "M:0.59€"; "coffee costs 0.6€, missing 0.59€")]
+    #[test_case(BeverageType::Tea, 39, "M:0.01€"; "tea costs 0.4€, missing 0.01€")]
+    #[test_case(BeverageType::Tea, 1, "M:0.39€"; "tea costs 0.4€, missing 0.39€")]
+    #[test_case(BeverageType::HotChocolate, 49, "M:0.01€"; "tea costs 0.5€, missing 0.01€")]
+    #[test_case(BeverageType::HotChocolate, 1, "M:0.49€"; "tea costs 0.5€, missing 0.49€")]
+    fn machine_shows_missing_amount_when_asked_for_a_beverage_with_not_enough_money(
+        beverage_type: BeverageType,
+        money_amount: u32,
+        expected_drink_maker_cmd: &str,
+    ) {
+        let drink_maker_spy = DrinkMakerSpy::new();
+        let machine = Machine::new(&drink_maker_spy);
+
+        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
+        machine.dispense(beverage_request);
+
+        let drink_maker_cmds = drink_maker_spy.get_received_commands();
+        assert_eq!(
+            drink_maker_cmds,
+            vec![String::from(expected_drink_maker_cmd)]
+        )
     }
 }
