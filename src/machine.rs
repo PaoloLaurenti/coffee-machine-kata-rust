@@ -42,17 +42,19 @@ impl Machine<'_> {
 }
 
 fn build_drink_maker_command(beverage_request: BeverageRequest) -> String {
+    let beverage_cmd_part = match beverage_request.beverage_type {
+        BeverageType::Coffe => "C",
+        BeverageType::Tea => "T",
+        BeverageType::HotChocolate => "H",
+    };
+
     let sugar_amount_cmd_part = match beverage_request.sugar_amount {
         SugarAmount::Zero => "",
         SugarAmount::One => "1",
         SugarAmount::Two => "2",
     };
 
-    match beverage_request.beverage_type {
-        BeverageType::Coffe => format!("C:{sugar_amount_cmd_part}:"),
-        BeverageType::Tea => format!("T:{sugar_amount_cmd_part}:"),
-        BeverageType::HotChocolate => format!("H:{sugar_amount_cmd_part}:"),
-    }
+    format!("{beverage_cmd_part}:{sugar_amount_cmd_part}:")
 }
 
 #[cfg(test)]
@@ -103,31 +105,21 @@ mod machine_tests {
         )
     }
 
-    #[test]
-    fn machine_dispenses_beverage_with_one_sugar() {
+    #[test_case(SugarAmount::One, "1" ; "one sugar")]
+    #[test_case(SugarAmount::Two, "2" ; "two sugars")]
+    fn machine_dispenses_beverage_with_one_sugar(
+        sugar_amount: SugarAmount,
+        expected_sugar_amount_cmd_part: &str,
+    ) {
         let drink_maker_spy = DrinkMakerSpy::new();
         let machine = Machine::new(&drink_maker_spy);
 
-        let beverage_request = BeverageRequest::new(BeverageType::Coffe, SugarAmount::One);
+        let beverage_request = BeverageRequest::new(BeverageType::Coffe, sugar_amount);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
         assert_eq!(1, drink_maker_cmds.len());
         let sugar_amount_part = drink_maker_cmds[0].split(':').nth(1).unwrap();
-        assert_eq!(sugar_amount_part, "1")
-    }
-
-    #[test]
-    fn machine_dispenses_beverage_with_two_sugars() {
-        let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
-
-        let beverage_request = BeverageRequest::new(BeverageType::Coffe, SugarAmount::Two);
-        machine.dispense(beverage_request);
-
-        let drink_maker_cmds = drink_maker_spy.get_received_commands();
-        assert_eq!(1, drink_maker_cmds.len());
-        let sugar_amount_part = drink_maker_cmds[0].split(':').nth(1).unwrap();
-        assert_eq!(sugar_amount_part, "2")
+        assert_eq!(sugar_amount_part, expected_sugar_amount_cmd_part)
     }
 }
