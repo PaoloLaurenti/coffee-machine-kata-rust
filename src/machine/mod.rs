@@ -1,7 +1,4 @@
-use self::{
-    beverage::Beverage, cashier::Cashier, dispenser::Dispenser, display::Display,
-    sugar_amount::SugarAmount,
-};
+use self::{beverage::Beverage, dispenser::Dispenser, display::Display, sugar_amount::SugarAmount};
 
 pub mod beverage;
 mod cashier;
@@ -32,22 +29,16 @@ impl BeverageRequest {
 pub struct Machine<'a> {
     dispenser: &'a dyn Dispenser,
     display: &'a dyn Display,
-    cashier: Cashier,
 }
 
 impl Machine<'_> {
     pub fn new<'a>(dispenser: &'a impl Dispenser, display: &'a impl Display) -> Machine<'a> {
-        Machine {
-            dispenser,
-            display,
-            cashier: Cashier::new(),
-        }
+        Machine { dispenser, display }
     }
 
     pub fn dispense(&self, beverage_request: BeverageRequest) {
-        let payment = self
-            .cashier
-            .check_payment(&beverage_request.beverage, beverage_request.money_amount);
+        let payment =
+            cashier::check_payment(&beverage_request.beverage, beverage_request.money_amount);
         match payment {
             cashier::BeveragePayment::Ok => self
                 .dispenser

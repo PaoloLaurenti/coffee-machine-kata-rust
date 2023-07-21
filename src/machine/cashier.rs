@@ -5,21 +5,13 @@ pub enum BeveragePayment {
     NotEnoughMoney(u32),
 }
 
-pub struct Cashier {}
+pub fn check_payment(beverage: &Beverage, money_amount: u32) -> BeveragePayment {
+    let beverage_price = get_beverage_price(beverage);
 
-impl Cashier {
-    pub fn new() -> Cashier {
-        Cashier {}
-    }
-
-    pub fn check_payment(&self, beverage: &Beverage, money_amount: u32) -> BeveragePayment {
-        let beverage_price = get_beverage_price(beverage);
-
-        if money_amount >= beverage_price {
-            BeveragePayment::Ok
-        } else {
-            BeveragePayment::NotEnoughMoney(beverage_price - money_amount)
-        }
+    if money_amount >= beverage_price {
+        BeveragePayment::Ok
+    } else {
+        BeveragePayment::NotEnoughMoney(beverage_price - money_amount)
     }
 }
 
