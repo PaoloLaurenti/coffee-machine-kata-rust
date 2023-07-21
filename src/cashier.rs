@@ -1,25 +1,21 @@
 use crate::beverage::Beverage;
-use std::collections::HashMap;
 
-pub struct Cashier {
-    prices_catalog: HashMap<Beverage, u32>,
+pub enum BeveragePayment {
+    Ok,
+    NotEnoughMoney(u32),
 }
+
+pub struct Cashier {}
 
 impl Cashier {
     pub fn new() -> Cashier {
-        let mut prices_catalog = HashMap::new();
-        prices_catalog.insert(Beverage::Coffee, 60);
-        prices_catalog.insert(Beverage::Tea, 40);
-        prices_catalog.insert(Beverage::HotChocolate, 50);
-        prices_catalog.insert(Beverage::OrangeJuice, 60);
-
-        Cashier { prices_catalog }
+        Cashier {}
     }
 
-    pub fn check_payment(&self, beverage_type: &Beverage, money_amount: u32) -> BeveragePayment {
-        let beverage_price = self.prices_catalog.get(beverage_type).unwrap();
+    pub fn check_payment(&self, beverage: &Beverage, money_amount: u32) -> BeveragePayment {
+        let beverage_price = get_beverage_price(beverage);
 
-        if money_amount >= *beverage_price {
+        if money_amount >= beverage_price {
             BeveragePayment::Ok
         } else {
             BeveragePayment::NotEnoughMoney(beverage_price - money_amount)
@@ -27,7 +23,11 @@ impl Cashier {
     }
 }
 
-pub enum BeveragePayment {
-    Ok,
-    NotEnoughMoney(u32),
+fn get_beverage_price(beverage: &Beverage) -> u32 {
+    match beverage {
+        Beverage::Coffee(_) => 60,
+        Beverage::Tea(_) => 40,
+        Beverage::HotChocolate(_) => 50,
+        Beverage::OrangeJuice => 60,
+    }
 }

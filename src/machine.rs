@@ -6,19 +6,19 @@ use crate::{
 };
 
 pub struct BeverageRequest {
-    beverage_type: Beverage,
+    beverage: Beverage,
     sugar_amount: SugarAmount,
     money_amount: u32,
 }
 
 impl BeverageRequest {
     pub fn new(
-        beverage_type: Beverage,
+        beverage: Beverage,
         sugar_amount: SugarAmount,
         money_amount: u32,
     ) -> BeverageRequest {
         BeverageRequest {
-            beverage_type,
+            beverage,
             sugar_amount,
             money_amount,
         }
@@ -39,13 +39,13 @@ impl Machine<'_> {
     }
 
     pub fn dispense(&self, beverage_request: BeverageRequest) {
-        let beverage_type = &beverage_request.beverage_type;
+        let beverage = &beverage_request.beverage;
         let money_amount = beverage_request.money_amount;
 
-        match self.cashier.check_payment(beverage_type, money_amount) {
+        match self.cashier.check_payment(beverage, money_amount) {
             cashier::BeveragePayment::Ok => self
                 .drink_maker
-                .dispense(beverage_type, &beverage_request.sugar_amount),
+                .dispense(beverage, &beverage_request.sugar_amount),
             cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => self
                 .drink_maker
                 .show_missing_money_message(missing_money_amount),
@@ -55,6 +55,7 @@ impl Machine<'_> {
 
 #[cfg(test)]
 mod machine_tests {
+    use crate::beverage::HotBeverageOption;
     use crate::drink_maker::DrinkMaker;
 
     use super::*;
@@ -83,19 +84,22 @@ mod machine_tests {
         }
     }
 
-    #[test_case(Beverage::Coffee, "C::" ; "cofee")]
-    #[test_case(Beverage::Tea, "T::" ; "tea")]
-    #[test_case(Beverage::HotChocolate, "H::" ; "hot chocolate")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::Standard), "C::" ; "cofee")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::ExtraHot), "Ch::" ; "extra hot cofee")]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), "T::" ; "tea")]
+    #[test_case(Beverage::Tea(HotBeverageOption::ExtraHot), "Th::" ; "extra hot tea")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), "H::" ; "hot chocolate")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::ExtraHot), "Hh::" ; "extra hot hot chocolate")]
     #[test_case(Beverage::OrangeJuice, "O::" ; "Orange juice")]
     fn machine_dispenses_beverage_with_no_sugar_no_stick(
-        beverage_type: Beverage,
+        beverage: Beverage,
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, 100000);
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, 100000);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -115,7 +119,11 @@ mod machine_tests {
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(Beverage::Coffee, sugar_amount, 100000);
+        let beverage_request = BeverageRequest::new(
+            Beverage::Coffee(HotBeverageOption::Standard),
+            sugar_amount,
+            100000,
+        );
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -134,7 +142,11 @@ mod machine_tests {
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(Beverage::Coffee, sugar_amount, 100000);
+        let beverage_request = BeverageRequest::new(
+            Beverage::Coffee(HotBeverageOption::Standard),
+            sugar_amount,
+            100000,
+        );
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -143,12 +155,12 @@ mod machine_tests {
         assert_eq!(stick_cmd_part, expected_stick_cmd_part)
     }
 
-    #[test_case(Beverage::Coffee, 60, "C::" ; "coffee costs 0.6€")]
-    #[test_case(Beverage::Tea, 40, "T::" ; "tea costs 0.4€")]
-    #[test_case(Beverage::HotChocolate, 50, "H::" ; "hot chocolate costs 0.5€")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::Standard), 60, "C::" ; "coffee costs 0.6€")]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), 40, "T::" ; "tea costs 0.4€")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), 50, "H::" ; "hot chocolate costs 0.5€")]
     #[test_case(Beverage::OrangeJuice, 60, "O::" ; "orange juice costs 0.6€")]
     fn machine_dispenses_beverages_only_when_given_money_is_enough(
-        beverage_type: Beverage,
+        beverage: Beverage,
         money_amount: u32,
         expected_drink_maker_cmd: &str,
     ) {
@@ -156,7 +168,7 @@ mod machine_tests {
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -166,12 +178,12 @@ mod machine_tests {
         )
     }
 
-    #[test_case(Beverage::Coffee, 59, "C::"; "coffee costs 0.6€")]
-    #[test_case(Beverage::Tea, 39, "T::" ; "tea costs 0.4€")]
-    #[test_case(Beverage::HotChocolate, 49, "H::" ; "hot chocolate costs 0.5€")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::Standard), 59, "C::"; "coffee costs 0.6€")]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), 39, "T::" ; "tea costs 0.4€")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), 49, "H::" ; "hot chocolate costs 0.5€")]
     #[test_case(Beverage::OrangeJuice, 59, "O::" ; "orange juice costs 0.6€")]
     fn machine_does_not_dispense_beverages_when_given_money_is_not_enough(
-        beverage_type: Beverage,
+        beverage: Beverage,
         money_amount: u32,
         dispense_drink_maker_cmd: &str,
     ) {
@@ -179,7 +191,7 @@ mod machine_tests {
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -189,16 +201,16 @@ mod machine_tests {
         )
     }
 
-    #[test_case(Beverage::Coffee, 59, "M:0.01€"; "coffee costs 0.6€, missing 0.01€")]
-    #[test_case(Beverage::Coffee, 1, "M:0.59€"; "coffee costs 0.6€, missing 0.59€")]
-    #[test_case(Beverage::Tea, 39, "M:0.01€"; "tea costs 0.4€, missing 0.01€")]
-    #[test_case(Beverage::Tea, 1, "M:0.39€"; "tea costs 0.4€, missing 0.39€")]
-    #[test_case(Beverage::HotChocolate, 49, "M:0.01€"; "tea costs 0.5€, missing 0.01€")]
-    #[test_case(Beverage::HotChocolate, 1, "M:0.49€"; "tea costs 0.5€, missing 0.49€")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::Standard), 59, "M:0.01€"; "coffee costs 0.6€, missing 0.01€")]
+    #[test_case(Beverage::Coffee(HotBeverageOption::Standard), 1, "M:0.59€"; "coffee costs 0.6€, missing 0.59€")]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), 39, "M:0.01€"; "tea costs 0.4€, missing 0.01€")]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), 1, "M:0.39€"; "tea costs 0.4€, missing 0.39€")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), 49, "M:0.01€"; "tea costs 0.5€, missing 0.01€")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), 1, "M:0.49€"; "tea costs 0.5€, missing 0.49€")]
     #[test_case(Beverage::OrangeJuice, 59, "M:0.01€"; "orange juice costs 0.6€, missing 0.01€")]
     #[test_case(Beverage::OrangeJuice, 1, "M:0.59€"; "orange juice costs 0.6€, missing 0.59€")]
     fn machine_shows_missing_amount_when_asked_for_a_beverage_with_not_enough_money(
-        beverage_type: Beverage,
+        beverage: Beverage,
         money_amount: u32,
         expected_drink_maker_cmd: &str,
     ) {
@@ -206,7 +218,7 @@ mod machine_tests {
         let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
         let machine = Machine::new(&drink_maker_proxy);
 
-        let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
