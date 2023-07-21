@@ -1,10 +1,8 @@
-use crate::drink_maker::DrinkMaker;
-
-pub enum BeverageType {
-    Coffee,
-    Tea,
-    HotChocolate,
-}
+use crate::{
+    beverage_type::BeverageType,
+    cashier::{self, Cashier},
+    drink_maker::DrinkMaker,
+};
 
 pub enum SugarAmount {
     Zero,
@@ -34,29 +32,42 @@ impl BeverageRequest {
 
 pub struct Machine<'a> {
     drink_maker: &'a dyn DrinkMaker,
+    cashier: Cashier,
 }
 
 impl Machine<'_> {
     pub fn new(drink_maker: &dyn DrinkMaker) -> Machine {
-        Machine { drink_maker }
+        Machine {
+            drink_maker,
+            cashier: Cashier::new(),
+        }
     }
 
     pub fn dispense(&self, beverage_request: BeverageRequest) {
         let beverage_type = &beverage_request.beverage_type;
         let money_amount = beverage_request.money_amount;
-        let sugar_amount = beverage_request.sugar_amount;
 
-        let missing_money = how_much_money_is_missing(beverage_type, money_amount);
-
-        if missing_money > 0 {
-            self.ask_drink_maker_to_show_missing_money(missing_money);
-            return;
+        match self.cashier.check_payment(beverage_type, money_amount) {
+            cashier::BeveragePayment::Ok => self.ask_drink_maker_to_dispense_beverage(
+                beverage_type,
+                &beverage_request.sugar_amount,
+            ),
+            cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => {
+                self.ask_drink_maker_to_show_missing_money(missing_money_amount)
+            }
         }
 
-        self.ask_drink_maker_to_dispense_beverage(beverage_type, sugar_amount);
+        // let missing_money = how_much_money_is_missing(beverage_type, money_amount);
+
+        // if missing_money > 0 {
+        //     self.ask_drink_maker_to_show_missing_money(missing_money);
+        //     return;
+        // }
+
+        // self.ask_drink_maker_to_dispense_beverage(beverage_type, beverage_request.sugar_amount);
     }
 
-    fn ask_drink_maker_to_show_missing_money(&self, missing_money: i32) {
+    fn ask_drink_maker_to_show_missing_money(&self, missing_money: u32) {
         let formatted_missing_money = missing_money as f32 / 100.0;
         self.drink_maker
             .execute(format!("M:{formatted_missing_money}€"));
@@ -65,22 +76,22 @@ impl Machine<'_> {
     fn ask_drink_maker_to_dispense_beverage(
         &self,
         beverage_type: &BeverageType,
-        sugar_amount: SugarAmount,
+        sugar_amount: &SugarAmount,
     ) {
         let drink_maker_cmd = build_drink_maker_command(beverage_type, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd)
     }
 }
 
-fn how_much_money_is_missing(beverage_type: &BeverageType, money_amount: u32) -> i32 {
-    match beverage_type {
-        BeverageType::Coffee => 60 - money_amount as i32,
-        BeverageType::Tea => 40 - money_amount as i32,
-        BeverageType::HotChocolate => 50 - money_amount as i32,
-    }
-}
+// fn how_much_money_is_missing(beverage_type: &BeverageType, money_amount: u32) -> i32 {
+//     match beverage_type {
+//         BeverageType::Coffee => 60 - money_amount as i32,
+//         BeverageType::Tea => 40 - money_amount as i32,
+//         BeverageType::HotChocolate => 50 - money_amount as i32,
+//     }
+// }
 
-fn build_drink_maker_command(beverage_type: &BeverageType, sugar_amount: SugarAmount) -> String {
+fn build_drink_maker_command(beverage_type: &BeverageType, sugar_amount: &SugarAmount) -> String {
     let beverage_cmd_part = match beverage_type {
         BeverageType::Coffee => "C",
         BeverageType::Tea => "T",
