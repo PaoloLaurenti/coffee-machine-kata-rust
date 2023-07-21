@@ -1,7 +1,8 @@
 use crate::{
     beverage::Beverage,
     cashier::{self, Cashier},
-    drink_maker_proxy::DrinkMakerProxy,
+    dispenser::Dispenser,
+    display::Display,
     sugar_amount::SugarAmount,
 };
 
@@ -26,28 +27,30 @@ impl BeverageRequest {
 }
 
 pub struct Machine<'a> {
-    drink_maker: &'a DrinkMakerProxy<'a>,
+    dispenser: &'a dyn Dispenser,
+    display: &'a dyn Display,
     cashier: Cashier,
 }
 
 impl Machine<'_> {
-    pub fn new<'a>(drink_maker: &'a DrinkMakerProxy<'a>) -> Machine<'a> {
+    pub fn new<'a>(dispenser: &'a dyn Dispenser, display: &'a dyn Display) -> Machine<'a> {
         Machine {
-            drink_maker,
+            dispenser,
+            display,
             cashier: Cashier::new(),
         }
     }
 
     pub fn dispense(&self, beverage_request: BeverageRequest) {
-        let beverage = &beverage_request.beverage;
-        let money_amount = beverage_request.money_amount;
-
-        match self.cashier.check_payment(beverage, money_amount) {
+        let payment = self
+            .cashier
+            .check_payment(&beverage_request.beverage, beverage_request.money_amount);
+        match payment {
             cashier::BeveragePayment::Ok => self
-                .drink_maker
-                .dispense(beverage, &beverage_request.sugar_amount),
+                .dispenser
+                .dispense(&beverage_request.beverage, &beverage_request.sugar_amount),
             cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => self
-                .drink_maker
+                .display
                 .show_missing_money_message(missing_money_amount),
         }
     }
@@ -57,6 +60,8 @@ impl Machine<'_> {
 mod machine_tests {
     use crate::beverage::HotBeverageOption;
     use crate::drink_maker::DrinkMaker;
+    use crate::drink_maker_dispenser::DrinkMakerDispenser;
+    use crate::drink_maker_display::DrinkMakerDisplay;
 
     use super::*;
     use std::cell::RefCell;
@@ -96,8 +101,9 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, 100000);
         machine.dispense(beverage_request);
@@ -116,8 +122,9 @@ mod machine_tests {
         expected_sugar_amount_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
@@ -139,8 +146,9 @@ mod machine_tests {
         expected_stick_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
@@ -165,8 +173,9 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
@@ -188,8 +197,9 @@ mod machine_tests {
         dispense_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
@@ -215,8 +225,9 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
-        let machine = Machine::new(&drink_maker_proxy);
+        let dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let machine = Machine::new(&dispenser, &display);
 
         let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);

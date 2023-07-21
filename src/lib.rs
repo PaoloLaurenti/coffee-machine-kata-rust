@@ -1,6 +1,9 @@
 pub mod machine;
 pub mod beverage;
 pub mod sugar_amount;
+pub mod dispenser;
+pub mod display;
 pub mod drink_maker;
-mod drink_maker_proxy;
+pub mod drink_maker_dispenser;
+pub mod drink_maker_display;
 mod cashier;
