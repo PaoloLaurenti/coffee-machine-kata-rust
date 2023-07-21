@@ -1,14 +1,9 @@
 use crate::{
     beverage_type::BeverageType,
     cashier::{self, Cashier},
-    drink_maker::DrinkMaker,
+    drink_maker_proxy::DrinkMakerProxy,
+    sugar_amount::SugarAmount,
 };
-
-pub enum SugarAmount {
-    Zero,
-    One,
-    Two,
-}
 
 pub struct BeverageRequest {
     beverage_type: BeverageType,
@@ -31,12 +26,12 @@ impl BeverageRequest {
 }
 
 pub struct Machine<'a> {
-    drink_maker: &'a dyn DrinkMaker,
+    drink_maker: &'a DrinkMakerProxy<'a>,
     cashier: Cashier,
 }
 
 impl Machine<'_> {
-    pub fn new(drink_maker: &dyn DrinkMaker) -> Machine {
+    pub fn new<'a>(drink_maker: &'a DrinkMakerProxy<'a>) -> Machine<'a> {
         Machine {
             drink_maker,
             cashier: Cashier::new(),
@@ -48,50 +43,20 @@ impl Machine<'_> {
         let money_amount = beverage_request.money_amount;
 
         match self.cashier.check_payment(beverage_type, money_amount) {
-            cashier::BeveragePayment::Ok => self.ask_drink_maker_to_dispense_beverage(
-                beverage_type,
-                &beverage_request.sugar_amount,
-            ),
-            cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => {
-                self.ask_drink_maker_to_show_missing_money(missing_money_amount)
-            }
+            cashier::BeveragePayment::Ok => self
+                .drink_maker
+                .dispense(beverage_type, &beverage_request.sugar_amount),
+            cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => self
+                .drink_maker
+                .show_missing_money_message(missing_money_amount),
         }
     }
-
-    fn ask_drink_maker_to_show_missing_money(&self, missing_money: u32) {
-        let formatted_missing_money = missing_money as f32 / 100.0;
-        self.drink_maker
-            .execute(format!("M:{formatted_missing_money}€"));
-    }
-
-    fn ask_drink_maker_to_dispense_beverage(
-        &self,
-        beverage_type: &BeverageType,
-        sugar_amount: &SugarAmount,
-    ) {
-        let drink_maker_cmd = build_drink_maker_command(beverage_type, sugar_amount);
-        self.drink_maker.execute(drink_maker_cmd)
-    }
-}
-
-fn build_drink_maker_command(beverage_type: &BeverageType, sugar_amount: &SugarAmount) -> String {
-    let beverage_cmd_part = match beverage_type {
-        BeverageType::Coffee => "C",
-        BeverageType::Tea => "T",
-        BeverageType::HotChocolate => "H",
-    };
-
-    let (sugar_amount_cmd_part, stick_cmd_part) = match sugar_amount {
-        SugarAmount::Zero => ("", ""),
-        SugarAmount::One => ("1", "0"),
-        SugarAmount::Two => ("2", "0"),
-    };
-
-    format!("{beverage_cmd_part}:{sugar_amount_cmd_part}:{stick_cmd_part}")
 }
 
 #[cfg(test)]
 mod machine_tests {
+    use crate::drink_maker::DrinkMaker;
+
     use super::*;
     use std::cell::RefCell;
     use test_case::test_case;
@@ -126,7 +91,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, 100000);
         machine.dispense(beverage_request);
@@ -145,7 +111,8 @@ mod machine_tests {
         expected_sugar_amount_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(BeverageType::Coffee, sugar_amount, 100000);
         machine.dispense(beverage_request);
@@ -163,7 +130,8 @@ mod machine_tests {
         expected_stick_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(BeverageType::Coffee, sugar_amount, 100000);
         machine.dispense(beverage_request);
@@ -183,7 +151,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
@@ -204,7 +173,8 @@ mod machine_tests {
         dispense_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
@@ -228,7 +198,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let machine = Machine::new(&drink_maker_spy);
+        let drink_maker_proxy = DrinkMakerProxy::new(&drink_maker_spy);
+        let machine = Machine::new(&drink_maker_proxy);
 
         let beverage_request = BeverageRequest::new(beverage_type, SugarAmount::Zero, money_amount);
         machine.dispense(beverage_request);
