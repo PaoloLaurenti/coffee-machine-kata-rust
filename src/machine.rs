@@ -56,15 +56,6 @@ impl Machine<'_> {
                 self.ask_drink_maker_to_show_missing_money(missing_money_amount)
             }
         }
-
-        // let missing_money = how_much_money_is_missing(beverage_type, money_amount);
-
-        // if missing_money > 0 {
-        //     self.ask_drink_maker_to_show_missing_money(missing_money);
-        //     return;
-        // }
-
-        // self.ask_drink_maker_to_dispense_beverage(beverage_type, beverage_request.sugar_amount);
     }
 
     fn ask_drink_maker_to_show_missing_money(&self, missing_money: u32) {
@@ -82,14 +73,6 @@ impl Machine<'_> {
         self.drink_maker.execute(drink_maker_cmd)
     }
 }
-
-// fn how_much_money_is_missing(beverage_type: &BeverageType, money_amount: u32) -> i32 {
-//     match beverage_type {
-//         BeverageType::Coffee => 60 - money_amount as i32,
-//         BeverageType::Tea => 40 - money_amount as i32,
-//         BeverageType::HotChocolate => 50 - money_amount as i32,
-//     }
-// }
 
 fn build_drink_maker_command(beverage_type: &BeverageType, sugar_amount: &SugarAmount) -> String {
     let beverage_cmd_part = match beverage_type {
