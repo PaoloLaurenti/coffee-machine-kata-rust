@@ -5,9 +5,9 @@ pub struct DrinkMakerDisplay<'a> {
 }
 
 impl DrinkMakerDisplay<'_> {
-  pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerDisplay {
-    DrinkMakerDisplay { drink_maker }
-  }
+    pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerDisplay {
+        DrinkMakerDisplay { drink_maker }
+    }
 }
 
 impl Display for DrinkMakerDisplay<'_> {
