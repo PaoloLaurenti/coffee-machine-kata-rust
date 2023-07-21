@@ -1,4 +1,4 @@
-use crate::beverage::Beverage;
+use crate::machine::beverage::Beverage;
 
 pub enum BeveragePayment {
     Ok,

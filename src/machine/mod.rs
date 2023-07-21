@@ -1,10 +1,11 @@
-use crate::{
-    beverage::Beverage,
-    cashier::{self, Cashier},
-    dispenser::Dispenser,
-    display::Display,
-    sugar_amount::SugarAmount,
-};
+use self::{beverage::Beverage, sugar_amount::SugarAmount, dispenser::Dispenser, display::Display, cashier::Cashier};
+
+pub mod beverage;
+pub mod sugar_amount;
+pub mod dispenser;
+pub mod display;
+mod cashier;
+
 
 pub struct BeverageRequest {
     beverage: Beverage,
@@ -58,10 +59,10 @@ impl Machine<'_> {
 
 #[cfg(test)]
 mod machine_tests {
-    use crate::beverage::HotBeverageOption;
+    use crate::machine::beverage::HotBeverageOption;
     use crate::drink_maker::DrinkMaker;
-    use crate::drink_maker_dispenser::DrinkMakerDispenser;
-    use crate::drink_maker_display::DrinkMakerDisplay;
+    use crate::drink_maker::drink_maker_dispenser::DrinkMakerDispenser;
+    use crate::drink_maker::drink_maker_display::DrinkMakerDisplay;
 
     use super::*;
     use std::cell::RefCell;

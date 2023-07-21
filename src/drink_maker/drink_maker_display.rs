@@ -1,4 +1,4 @@
-use crate::{drink_maker::DrinkMaker, display::Display};
+use crate::{drink_maker::DrinkMaker, machine::display::Display};
 
 pub struct DrinkMakerDisplay<'a> {
     drink_maker: &'a dyn DrinkMaker,

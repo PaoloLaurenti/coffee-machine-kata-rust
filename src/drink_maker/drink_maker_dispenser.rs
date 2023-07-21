@@ -1,7 +1,7 @@
 use crate::{
-    beverage::{Beverage, HotBeverageOption},
+    machine::beverage::{Beverage, HotBeverageOption},
     drink_maker::DrinkMaker,
-    sugar_amount::SugarAmount, dispenser::Dispenser,
+    machine::sugar_amount::SugarAmount, machine::dispenser::Dispenser,
 };
 
 pub struct DrinkMakerDispenser<'a> {
