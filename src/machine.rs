@@ -86,6 +86,7 @@ mod machine_tests {
     #[test_case(BeverageType::Coffee, "C::" ; "cofee")]
     #[test_case(BeverageType::Tea, "T::" ; "tea")]
     #[test_case(BeverageType::HotChocolate, "H::" ; "hot chocolate")]
+    #[test_case(BeverageType::OrangeJuice, "O::" ; "Orange juice")]
     fn machine_dispenses_beverage_with_no_sugar_no_stick(
         beverage_type: BeverageType,
         expected_drink_maker_cmd: &str,
@@ -145,6 +146,7 @@ mod machine_tests {
     #[test_case(BeverageType::Coffee, 60, "C::" ; "coffee costs 0.6€")]
     #[test_case(BeverageType::Tea, 40, "T::" ; "tea costs 0.4€")]
     #[test_case(BeverageType::HotChocolate, 50, "H::" ; "hot chocolate costs 0.5€")]
+    #[test_case(BeverageType::OrangeJuice, 60, "O::" ; "orange juice costs 0.6€")]
     fn machine_dispenses_beverages_only_when_given_money_is_enough(
         beverage_type: BeverageType,
         money_amount: u32,
@@ -167,6 +169,7 @@ mod machine_tests {
     #[test_case(BeverageType::Coffee, 59, "C::"; "coffee costs 0.6€")]
     #[test_case(BeverageType::Tea, 39, "T::" ; "tea costs 0.4€")]
     #[test_case(BeverageType::HotChocolate, 49, "H::" ; "hot chocolate costs 0.5€")]
+    #[test_case(BeverageType::OrangeJuice, 59, "O::" ; "orange juice costs 0.6€")]
     fn machine_does_not_dispense_beverages_when_given_money_is_not_enough(
         beverage_type: BeverageType,
         money_amount: u32,
@@ -192,6 +195,8 @@ mod machine_tests {
     #[test_case(BeverageType::Tea, 1, "M:0.39€"; "tea costs 0.4€, missing 0.39€")]
     #[test_case(BeverageType::HotChocolate, 49, "M:0.01€"; "tea costs 0.5€, missing 0.01€")]
     #[test_case(BeverageType::HotChocolate, 1, "M:0.49€"; "tea costs 0.5€, missing 0.49€")]
+    #[test_case(BeverageType::OrangeJuice, 59, "M:0.01€"; "orange juice costs 0.6€, missing 0.01€")]
+    #[test_case(BeverageType::OrangeJuice, 1, "M:0.59€"; "orange juice costs 0.6€, missing 0.59€")]
     fn machine_shows_missing_amount_when_asked_for_a_beverage_with_not_enough_money(
         beverage_type: BeverageType,
         money_amount: u32,

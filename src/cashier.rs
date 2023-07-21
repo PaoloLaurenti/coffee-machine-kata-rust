@@ -11,6 +11,7 @@ impl Cashier {
         prices_catalog.insert(BeverageType::Coffee, 60);
         prices_catalog.insert(BeverageType::Tea, 40);
         prices_catalog.insert(BeverageType::HotChocolate, 50);
+        prices_catalog.insert(BeverageType::OrangeJuice, 60);
 
         Cashier { prices_catalog }
     }

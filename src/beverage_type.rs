@@ -3,4 +3,5 @@ pub enum BeverageType {
   Coffee,
   Tea,
   HotChocolate,
+  OrangeJuice
 }

@@ -11,7 +11,7 @@ impl DrinkMakerProxy<'_> {
 
     pub fn dispense(&self, beverage_type: &BeverageType, sugar_amount: &SugarAmount) {
         let drink_maker_cmd =
-            DrinkMakerProxy::build_drink_maker_beverage_command(beverage_type, sugar_amount);
+            DrinkMakerProxy::build_beverage_command(beverage_type, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd)
     }
 
@@ -21,7 +21,7 @@ impl DrinkMakerProxy<'_> {
             .execute(format!("M:{formatted_missing_money}€"));
     }
 
-    fn build_drink_maker_beverage_command(
+    fn build_beverage_command(
         beverage_type: &BeverageType,
         sugar_amount: &SugarAmount,
     ) -> String {
@@ -29,6 +29,7 @@ impl DrinkMakerProxy<'_> {
             BeverageType::Coffee => "C",
             BeverageType::Tea => "T",
             BeverageType::HotChocolate => "H",
+            BeverageType::OrangeJuice => "O",
         };
 
         let (sugar_amount_cmd_part, stick_cmd_part) = match sugar_amount {
