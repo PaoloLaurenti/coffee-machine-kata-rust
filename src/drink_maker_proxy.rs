@@ -1,4 +1,4 @@
-use crate::{beverage_type::BeverageType, drink_maker::DrinkMaker, sugar_amount::SugarAmount};
+use crate::{beverage::Beverage, drink_maker::DrinkMaker, sugar_amount::SugarAmount};
 
 pub struct DrinkMakerProxy<'a> {
     drink_maker: &'a dyn DrinkMaker,
@@ -9,9 +9,8 @@ impl DrinkMakerProxy<'_> {
         DrinkMakerProxy { drink_maker }
     }
 
-    pub fn dispense(&self, beverage_type: &BeverageType, sugar_amount: &SugarAmount) {
-        let drink_maker_cmd =
-            DrinkMakerProxy::build_beverage_command(beverage_type, sugar_amount);
+    pub fn dispense(&self, beverage_type: &Beverage, sugar_amount: &SugarAmount) {
+        let drink_maker_cmd = DrinkMakerProxy::build_beverage_command(beverage_type, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd)
     }
 
@@ -21,15 +20,12 @@ impl DrinkMakerProxy<'_> {
             .execute(format!("M:{formatted_missing_money}€"));
     }
 
-    fn build_beverage_command(
-        beverage_type: &BeverageType,
-        sugar_amount: &SugarAmount,
-    ) -> String {
+    fn build_beverage_command(beverage_type: &Beverage, sugar_amount: &SugarAmount) -> String {
         let beverage_cmd_part = match beverage_type {
-            BeverageType::Coffee => "C",
-            BeverageType::Tea => "T",
-            BeverageType::HotChocolate => "H",
-            BeverageType::OrangeJuice => "O",
+            Beverage::Coffee => "C",
+            Beverage::Tea => "T",
+            Beverage::HotChocolate => "H",
+            Beverage::OrangeJuice => "O",
         };
 
         let (sugar_amount_cmd_part, stick_cmd_part) = match sugar_amount {
