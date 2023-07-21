@@ -33,7 +33,7 @@ pub struct Machine<'a> {
 }
 
 impl Machine<'_> {
-    pub fn new<'a>(dispenser: &'a dyn Dispenser, display: &'a dyn Display) -> Machine<'a> {
+    pub fn new<'a>(dispenser: &'a impl Dispenser, display: &'a impl Display) -> Machine<'a> {
         Machine {
             dispenser,
             display,

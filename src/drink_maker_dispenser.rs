@@ -9,7 +9,7 @@ pub struct DrinkMakerDispenser<'a> {
 }
 
 impl DrinkMakerDispenser<'_> {
-    pub fn new(drink_maker: &dyn DrinkMaker) -> DrinkMakerDispenser {
+    pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerDispenser {
         DrinkMakerDispenser { drink_maker }
     }
 }
