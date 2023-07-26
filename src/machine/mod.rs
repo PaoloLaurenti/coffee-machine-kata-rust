@@ -203,6 +203,8 @@ mod machine_tests {
         }
     }
 
+    const ENOUGH_MONEY: u32 = 100;
+
     #[test_case(Beverage::Coffee(HotBeverageOption::Standard), "C::" ; "cofee")]
     #[test_case(Beverage::Coffee(HotBeverageOption::ExtraHot), "Ch::" ; "extra hot cofee")]
     #[test_case(Beverage::Tea(HotBeverageOption::Standard), "T::" ; "tea")]
@@ -220,7 +222,7 @@ mod machine_tests {
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
-        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, 100000);
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, ENOUGH_MONEY);
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
@@ -245,7 +247,7 @@ mod machine_tests {
         let beverage_request = BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             sugar_amount,
-            100000,
+            ENOUGH_MONEY,
         );
         machine.dispense(beverage_request);
 
@@ -270,7 +272,7 @@ mod machine_tests {
         let beverage_request = BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             sugar_amount,
-            100000,
+            ENOUGH_MONEY,
         );
         machine.dispense(beverage_request);
 
@@ -366,17 +368,17 @@ mod machine_tests {
         machine.dispense(BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             SugarAmount::Zero,
-            100,
+            ENOUGH_MONEY,
         ));
         machine.dispense(BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             SugarAmount::Zero,
-            100,
+            ENOUGH_MONEY,
         ));
         machine.dispense(BeverageRequest::new(
             Beverage::OrangeJuice,
             SugarAmount::Zero,
-            100,
+            ENOUGH_MONEY,
         ));
 
         machine.print_purchases_report();
@@ -411,7 +413,6 @@ mod machine_tests {
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
-        const ENOUGH_MONEY: u32 = 100;
         let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, ENOUGH_MONEY);
         machine.dispense(beverage_request);
 
@@ -430,7 +431,6 @@ mod machine_tests {
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
-        const ENOUGH_MONEY: u32 = 100;
         let beverage_request = BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             SugarAmount::Zero,
@@ -459,12 +459,12 @@ mod machine_tests {
         machine.dispense(BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
             SugarAmount::Zero,
-            100,
+            ENOUGH_MONEY,
         ));
         machine.dispense(BeverageRequest::new(
             Beverage::OrangeJuice,
             SugarAmount::Zero,
-            100,
+            ENOUGH_MONEY,
         ));
 
         machine.print_purchases_report();
@@ -481,7 +481,6 @@ mod machine_tests {
         )
     }
 
-    // refactor enough money const
     // review test names
     // review folder structure
     // extract helper function test
