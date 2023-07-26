@@ -1,20 +1,20 @@
 use crate::machine::beverage::Beverage;
 
-pub enum BeveragePayment {
+pub(crate) enum BeveragePayment {
     Ok,
     NotEnoughMoney(u32),
 }
 
-pub struct Cashier {
+pub(crate) struct Cashier {
     cash: Cash,
 }
 
 impl Cashier {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self { cash: Cash::new() }
     }
 
-    pub fn checkout_payment(&mut self, beverage: &Beverage, money_amount: u32) -> BeveragePayment {
+    pub(crate) fn checkout_payment(&mut self, beverage: &Beverage, money_amount: u32) -> BeveragePayment {
         let beverage_price = get_beverage_price(beverage);
 
         if money_amount >= beverage_price {
@@ -25,8 +25,13 @@ impl Cashier {
         }
     }
 
-    pub fn total_money_earned(&self) -> u32 {
+    pub(crate) fn total_money_earned(&self) -> u32 {
         self.cash.total_balance
+    }
+
+    pub(crate) fn refund_beverage_payment(&mut self, beverage: &Beverage) {
+        let beverage_price = get_beverage_price(beverage);
+        self.cash.withdrawn(beverage_price);
     }
 }
 
@@ -41,6 +46,10 @@ impl Cash {
 
     fn deposit(&mut self, amount: u32) {
         self.total_balance += amount;
+    }
+
+    fn withdrawn(&mut self, amount: u32) {
+        self.total_balance -= amount;
     }
 }
 

@@ -26,7 +26,7 @@ impl DrinkMakerDispenser<'_> {
         }
     }
 
-    fn send_beverage_request(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) {
+    fn request_beverage(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) {
         let drink_maker_cmd = build_beverage_command(beverage, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd);
     }
@@ -39,10 +39,12 @@ impl DrinkMakerDispenser<'_> {
 
 impl Dispenser for DrinkMakerDispenser<'_> {
     fn dispense(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) -> BeverageDispsense {
-        if self.beverage_quantity_checker.is_empty(beverage) {
+        let is_empty = self.beverage_quantity_checker.is_empty(beverage);
+        dbg!((beverage, is_empty));
+        if is_empty {
             BeverageDispsense::Shortage
         } else {
-            self.send_beverage_request(beverage, sugar_amount);
+            self.request_beverage(beverage, sugar_amount);
             self.record_dispensed_beverage(beverage);
             BeverageDispsense::Ok
         }
