@@ -14,7 +14,11 @@ impl Cashier {
         Self { cash: Cash::new() }
     }
 
-    pub(crate) fn checkout_payment(&mut self, beverage: &Beverage, money_amount: u32) -> BeveragePayment {
+    pub(crate) fn checkout_payment(
+        &mut self,
+        beverage: &Beverage,
+        money_amount: u32,
+    ) -> BeveragePayment {
         let beverage_price = get_beverage_price(beverage);
 
         if money_amount >= beverage_price {

@@ -6,8 +6,6 @@ pub enum Beverage {
     OrangeJuice,
 }
 
-
-
 #[derive(Eq, Hash, PartialEq, Debug, Clone)]
 pub enum HotBeverageOption {
     Standard,
