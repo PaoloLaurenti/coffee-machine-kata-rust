@@ -8,6 +8,7 @@ use self::{
 };
 
 pub mod beverage;
+pub mod beverage_quantity_checker;
 mod cashier;
 pub mod dispenser;
 pub mod display;
@@ -59,13 +60,25 @@ impl Machine<'_> {
         let payment = self
             .cashier
             .checkout_payment(&beverage_request.beverage, beverage_request.money_amount);
+
         match payment {
-            cashier::BeveragePayment::Ok => self
-                .dispenser
-                .dispense(beverage_request.beverage, &beverage_request.sugar_amount),
+            cashier::BeveragePayment::Ok => {
+                self.handle_dispense(&beverage_request.beverage, &beverage_request.sugar_amount)
+            }
             cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => self
                 .display
                 .show_missing_money_message(missing_money_amount),
+        }
+    }
+
+    fn handle_dispense(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) {
+        let dispensed = self.dispenser.dispense(beverage, sugar_amount);
+
+        match dispensed {
+            dispenser::BeverageDispsense::Ok => (),
+            dispenser::BeverageDispsense::Shortage => {
+                self.display.show_beverage_shortage_message(beverage)
+            }
         }
     }
 
@@ -73,10 +86,9 @@ impl Machine<'_> {
         let dispensed_beverages_history = self.dispenser.dispensed_beverages();
         let total_money_earned = self.cashier.total_money_earned();
 
-        self.reports_printer.print(PurchasesReport {
-            beverages_quantities: dispensed_beverages_history.quantities,
-            total_money_earned,
-        })
+        let purchase_report =
+            PurchasesReport::new(&dispensed_beverages_history.quantities, total_money_earned);
+        self.reports_printer.print(purchase_report)
     }
 }
 
@@ -88,6 +100,7 @@ mod machine_tests {
     use crate::machine::beverage::HotBeverageOption;
     use crate::machine::reports_printer::{PurchasesReport, ReportsPrinter};
 
+    use super::beverage_quantity_checker::BeverageQuantityChecker;
     use super::*;
     use std::cell::RefCell;
     use std::collections::HashMap;
@@ -129,6 +142,22 @@ mod machine_tests {
     struct DummyDisplay {}
     impl Display for DummyDisplay {
         fn show_missing_money_message(&self, _missing_money: u32) {}
+
+        fn show_beverage_shortage_message(&self, _beverage: &Beverage) {}
+    }
+
+    struct StubInfiniteBeverageQuantityChecker {}
+    impl BeverageQuantityChecker for StubInfiniteBeverageQuantityChecker {
+        fn is_empty(&self, _beverage: &Beverage) -> bool {
+            false
+        }
+    }
+
+    struct StubEmptyBeverageQuantityChecker {}
+    impl BeverageQuantityChecker for StubEmptyBeverageQuantityChecker {
+        fn is_empty(&self, _beverage: &Beverage) -> bool {
+            true
+        }
     }
 
     struct ReportsPrinterSpy {
@@ -147,7 +176,7 @@ mod machine_tests {
         fn print(&self, purchase_report: PurchasesReport) {
             self.reports_requested_to_print
                 .borrow_mut()
-                .push(purchase_report);
+                .push(purchase_report)
         }
     }
 
@@ -163,7 +192,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -184,7 +214,8 @@ mod machine_tests {
         expected_sugar_amount_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -208,7 +239,8 @@ mod machine_tests {
         expected_stick_cmd_part: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -235,7 +267,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -259,7 +292,8 @@ mod machine_tests {
         dispense_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -267,10 +301,7 @@ mod machine_tests {
         machine.dispense(beverage_request);
 
         let drink_maker_cmds = drink_maker_spy.get_received_commands();
-        assert_eq!(
-            false,
-            drink_maker_cmds.contains(&dispense_drink_maker_cmd.to_string())
-        )
+        assert!(!drink_maker_cmds.contains(&dispense_drink_maker_cmd.to_string()))
     }
 
     #[test_case(Beverage::Coffee(HotBeverageOption::Standard), 59, "M:0.01€"; "coffee costs 0.6€, missing 0.01€")]
@@ -287,7 +318,8 @@ mod machine_tests {
         expected_drink_maker_cmd: &str,
     ) {
         let drink_maker_spy = DrinkMakerSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&drink_maker_spy);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubInfiniteBeverageQuantityChecker {});
         let display = DrinkMakerDisplay::new(&drink_maker_spy);
         let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
 
@@ -305,7 +337,8 @@ mod machine_tests {
     fn machine_prints_purchases_report() {
         let dummy_drink_maker = DummyDrinkMaker {};
         let reports_printer_spy = ReportsPrinterSpy::new();
-        let mut dispenser = DrinkMakerDispenser::new(&dummy_drink_maker);
+        let mut dispenser =
+            DrinkMakerDispenser::new(&dummy_drink_maker, &StubInfiniteBeverageQuantityChecker {});
         let mut machine = Machine::new(&mut dispenser, &(DummyDisplay {}), &reports_printer_spy);
         machine.dispense(BeverageRequest::new(
             Beverage::Coffee(HotBeverageOption::Standard),
@@ -337,4 +370,32 @@ mod machine_tests {
             vec![expeted_report]
         )
     }
+
+    #[test_case(
+        Beverage::Coffee(HotBeverageOption::Standard),
+        "M:Sorry, coffee is empty."
+    )]
+    #[test_case(Beverage::Tea(HotBeverageOption::Standard), "M:Sorry, tea is empty.")]
+    #[test_case(Beverage::HotChocolate(HotBeverageOption::Standard), "M:Sorry, hot chocolate is empty.")]
+    #[test_case(Beverage::OrangeJuice, "M:Sorry, orange juice is empty.")]
+    fn machine_show_shortage_message(beverage: Beverage, exptected_shortage_message: &str) {
+        let drink_maker_spy = DrinkMakerSpy::new();
+        let mut dispenser =
+            DrinkMakerDispenser::new(&drink_maker_spy, &StubEmptyBeverageQuantityChecker {});
+        let display = DrinkMakerDisplay::new(&drink_maker_spy);
+        let mut machine = Machine::new(&mut dispenser, &display, &DummyReportsPrinter {});
+
+        const ENOUGH_MONEY: u32 = 100;
+        let beverage_request = BeverageRequest::new(beverage, SugarAmount::Zero, ENOUGH_MONEY);
+        machine.dispense(beverage_request);
+
+        let drink_maker_cmds = drink_maker_spy.get_received_commands();
+        assert!(
+            drink_maker_cmds.contains(&exptected_shortage_message.to_string()),
+            "No coffee shortage message command has been requested to the drink maker. Commands received are {:?}", drink_maker_cmds
+        )
+    }
+
+    // when there's a shortage of a beverage, no request to dispense should be sent to the drink maker
+    // report should not contain beverages not dispensed due to shortage
 }

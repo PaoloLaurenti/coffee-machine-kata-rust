@@ -1,32 +1,55 @@
-use std::collections::HashMap;
-
 use crate::{
     drink_maker::DrinkMaker,
     machine::beverage::{Beverage, HotBeverageOption},
-    machine::dispenser::{Dispenser, DispensedBeveragesHistory},
     machine::sugar_amount::SugarAmount,
+    machine::{
+        beverage_quantity_checker::BeverageQuantityChecker,
+        dispenser::{BeverageDispsense, DispensedBeveragesHistory, Dispenser},
+    },
 };
 
 pub struct DrinkMakerDispenser<'a> {
     drink_maker: &'a dyn DrinkMaker,
-    dispensed_quantities: HashMap<Beverage, u32>
+    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+    dispensed_beverages_history: DispensedBeveragesHistory,
 }
 
 impl DrinkMakerDispenser<'_> {
-    pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerDispenser {
-        DrinkMakerDispenser { drink_maker, dispensed_quantities: HashMap::new() }
+    pub fn new<'a>(
+        drink_maker: &'a impl DrinkMaker,
+        beverage_quantity_checker: &'a impl BeverageQuantityChecker,
+    ) -> DrinkMakerDispenser<'a> {
+        DrinkMakerDispenser {
+            drink_maker,
+            beverage_quantity_checker,
+            dispensed_beverages_history: DispensedBeveragesHistory::new(),
+        }
+    }
+
+    fn send_beverage_request(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) {
+        let drink_maker_cmd = build_beverage_command(beverage, sugar_amount);
+        self.drink_maker.execute(drink_maker_cmd);
+    }
+
+    fn record_dispensed_beverage(&mut self, beverage: &Beverage) {
+        self.dispensed_beverages_history
+            .record_dispensed_beverage(beverage)
     }
 }
 
 impl Dispenser for DrinkMakerDispenser<'_> {
-    fn dispense(&mut self, beverage: Beverage, sugar_amount: &SugarAmount) {
-        let drink_maker_cmd = build_beverage_command(&beverage, sugar_amount);
-        self.drink_maker.execute(drink_maker_cmd);
-        self.dispensed_quantities.entry(beverage).and_modify(|counter| *counter += 1).or_insert(1);
+    fn dispense(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) -> BeverageDispsense {
+        if self.beverage_quantity_checker.is_empty(beverage) {
+            BeverageDispsense::Shortage
+        } else {
+            self.send_beverage_request(beverage, sugar_amount);
+            self.record_dispensed_beverage(beverage);
+            BeverageDispsense::Ok
+        }
     }
 
-    fn dispensed_beverages(&self) -> DispensedBeveragesHistory {
-      DispensedBeveragesHistory::new(self.dispensed_quantities.clone())
+    fn dispensed_beverages(&self) -> &DispensedBeveragesHistory {
+        &self.dispensed_beverages_history
     }
 }
 
