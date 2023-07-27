@@ -83,7 +83,7 @@ impl Machine<'_> {
             dispenser::BeverageDispsense::Ok => (),
             dispenser::BeverageDispsense::Shortage => {
                 self.cashier.refund_beverage_payment(beverage);
-                self.notifier.notify_missing_drink(beverage);
+                self.notifier.notify_missing_beverage(beverage);
                 self.display.show_beverage_shortage_message(beverage)
             }
         }
@@ -211,30 +211,32 @@ mod machine_tests {
     }
 
     struct NotifierSpy {
-        missing_drinks_notifications: RefCell<Vec<Beverage>>,
+        missing_beverages_notifications: RefCell<Vec<Beverage>>,
     }
 
     impl NotifierSpy {
         fn new() -> NotifierSpy {
             NotifierSpy {
-                missing_drinks_notifications: RefCell::new(Vec::new()),
+                missing_beverages_notifications: RefCell::new(Vec::new()),
             }
         }
 
-        fn missing_drinks_notifications(&self) -> Vec<Beverage> {
-            self.missing_drinks_notifications.borrow().clone()
+        fn missing_beverages_notifications(&self) -> Vec<Beverage> {
+            self.missing_beverages_notifications.borrow().clone()
         }
     }
 
     impl Notifier for NotifierSpy {
-        fn notify_missing_drink(&self, drink: &Beverage) {
-            self.missing_drinks_notifications.borrow_mut().push(drink.clone())
+        fn notify_missing_beverage(&self, drink: &Beverage) {
+            self.missing_beverages_notifications
+                .borrow_mut()
+                .push(drink.clone())
         }
     }
 
     struct DummyNotifier {}
     impl Notifier for DummyNotifier {
-        fn notify_missing_drink(&self, _drink: &Beverage) {}
+        fn notify_missing_beverage(&self, _drink: &Beverage) {}
     }
 
     const ENOUGH_MONEY: u32 = 100;
@@ -600,9 +602,9 @@ mod machine_tests {
         machine.dispense(orange_juice_beverage_request);
         machine.dispense(tea_beverage_request);
 
-        let notified_missing_drinks = notifier_spy.missing_drinks_notifications();
+        let notified_missing_beverages = notifier_spy.missing_beverages_notifications();
         assert_eq!(
-            notified_missing_drinks,
+            notified_missing_beverages,
             vec![
                 Beverage::OrangeJuice,
                 Beverage::Tea(HotBeverageOption::ExtraHot)
