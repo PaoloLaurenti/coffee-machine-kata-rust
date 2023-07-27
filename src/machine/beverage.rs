@@ -1,4 +1,4 @@
-#[derive(Eq, Hash, PartialEq, Debug, Clone)]
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
 pub enum Beverage {
     Coffee(HotBeverageOption),
     Tea(HotBeverageOption),
@@ -6,7 +6,7 @@ pub enum Beverage {
     OrangeJuice,
 }
 
-#[derive(Eq, Hash, PartialEq, Debug, Clone)]
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
 pub enum HotBeverageOption {
     Standard,
     ExtraHot,

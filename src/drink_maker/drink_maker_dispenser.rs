@@ -39,9 +39,7 @@ impl DrinkMakerDispenser<'_> {
 
 impl Dispenser for DrinkMakerDispenser<'_> {
     fn dispense(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) -> BeverageDispsense {
-        let is_empty = self.beverage_quantity_checker.is_empty(beverage);
-        dbg!((beverage, is_empty));
-        if is_empty {
+        if self.beverage_quantity_checker.is_empty(beverage) {
             BeverageDispsense::Shortage
         } else {
             self.request_beverage(beverage, sugar_amount);
