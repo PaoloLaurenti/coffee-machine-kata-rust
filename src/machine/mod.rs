@@ -540,13 +540,13 @@ mod machine_tests {
         stub_beverage_quantity_checker.stub_beverage_as_empty(Beverage::OrangeJuice);
         stub_beverage_quantity_checker
             .stub_beverage_as_empty(Beverage::Tea(HotBeverageOption::ExtraHot));
-        let notifier_spy = NotifierTestDouble::new();
+        let notifier_test_double = NotifierTestDouble::new();
         let mut machine = Machine::new(
             &DummyBeverageServer {},
             &stub_beverage_quantity_checker,
             &DummyDisplay {},
             &DummyReportsPrinter {},
-            &notifier_spy,
+            &notifier_test_double,
         );
 
         let coffee_beverage_request = BeverageRequest::new(
@@ -565,7 +565,7 @@ mod machine_tests {
         machine.dispense(orange_juice_beverage_request);
         machine.dispense(tea_beverage_request);
 
-        let notified_missing_beverages = notifier_spy.spied_missing_beverages_notifications();
+        let notified_missing_beverages = notifier_test_double.spied_missing_beverages_notifications();
         assert_eq!(
             notified_missing_beverages,
             vec![
