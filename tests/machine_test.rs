@@ -1,8 +1,8 @@
 mod common;
 
 use crate::common::{
-    beverage_quantity_checker_fake::BeverageQuantityCheckerFake, drink_maker_spy::DrinkMakerSpy,
-    dummy_notifier::DummyNotifier, dummy_reports_printer::DummyReportsPrinter,
+    drink_maker_spy::DrinkMakerSpy, dummy_notifier::DummyNotifier,
+    dummy_reports_printer::DummyReportsPrinter,
 };
 use coffee_machine_kata_rust::{
     drink_maker::{
@@ -10,12 +10,30 @@ use coffee_machine_kata_rust::{
         drink_maker_display::DrinkMakerDisplay,
     },
     machine::{
-        beverage::Beverage, beverage::HotBeverageOption, sugar_amount::SugarAmount, Machine, beverage_request::BeverageRequest,
+        beverage::Beverage, beverage::HotBeverageOption,
+        beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
+        sugar_amount::SugarAmount, Machine,
     },
 };
 use test_case::test_case;
 
 const ENOUGH_MONEY: u32 = 100;
+
+struct BeverageQuantityCheckerFake {
+    always_empty: bool,
+}
+
+impl BeverageQuantityCheckerFake {
+    pub(crate) fn new(always_empty: bool) -> Self {
+        Self { always_empty }
+    }
+}
+
+impl BeverageQuantityChecker for BeverageQuantityCheckerFake {
+    fn is_empty(&self, _beverage: &Beverage) -> bool {
+        self.always_empty
+    }
+}
 
 #[test_case(Beverage::Coffee(HotBeverageOption::Standard), SugarAmount::One, "C:1:0" ; "coffee")]
 #[test_case(Beverage::Coffee(HotBeverageOption::ExtraHot), SugarAmount::Zero, "Ch::" ; "extra hot coffee")]
@@ -38,7 +56,7 @@ fn machine_dispenses_beverage(
     );
 
     let beverage_request = BeverageRequest::new(&beverage, &sugar_amount, ENOUGH_MONEY);
-    machine.dispense2(beverage_request);
+    machine.dispense(beverage_request);
 
     let drink_maker_cmds = drink_maker_spy.get_received_commands();
     assert_eq!(
@@ -69,7 +87,7 @@ fn machine_requires_money_to_dispense_beverage(
     );
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
-    machine.dispense2(beverage_request);
+    machine.dispense(beverage_request);
 
     let drink_maker_cmds = drink_maker_spy.get_received_commands();
     assert_eq!(
