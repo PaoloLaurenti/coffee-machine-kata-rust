@@ -1,6 +1,6 @@
 use coffee_machine_kata_rust::{
     drink_maker::drink_maker_display::DrinkMakerDisplay,
-    machine::{
+    machine_system::{
         beverages::beverage::Beverage, beverages::beverage::HotBeverageOption, display::Display,
     },
 };

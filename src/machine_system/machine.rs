@@ -1,24 +1,22 @@
-use self::{
-    cashier::Cashier,
+use super::{
+    beverages::{
+        beverage::Beverage,
+        beverage_request::BeverageRequest,
+        dispenser::{self, Dispenser},
+        sugar_amount::SugarAmount,
+    },
+    cashier::{self, Cashier},
     display::Display,
     notifier::Notifier,
     reports_printer::{PurchasesReport, ReportsPrinter},
-    beverages::{beverage_request::BeverageRequest, sugar_amount::SugarAmount, beverage::Beverage, dispenser::{Dispenser, self}},
 };
 
-pub mod beverages;
-mod cashier;
-pub mod display;
-pub mod machine_builder;
-pub mod notifier;
-pub mod reports_printer;
-
 pub struct Machine<'a> {
-    dispenser: Dispenser<'a>,
-    cashier: Cashier,
-    display: &'a dyn Display,
-    reports_printer: &'a dyn ReportsPrinter,
-    notifier: &'a dyn Notifier,
+    pub(crate) dispenser: Dispenser<'a>,
+    pub(crate) cashier: Cashier,
+    pub(crate) display: &'a dyn Display,
+    pub(crate) reports_printer: &'a dyn ReportsPrinter,
+    pub(crate) notifier: &'a dyn Notifier,
 }
 
 impl Machine<'_> {
@@ -63,21 +61,20 @@ impl Machine<'_> {
 }
 
 #[cfg(test)]
-mod machine_tests {
-    use crate::machine::beverages::beverage_request::BeverageRequest;
-    use crate::machine::machine_builder::MachineBuilder;
-    use crate::machine::reports_printer::{PurchasesReport, ReportsPrinter};
-
-    use super::beverages::beverage::Beverage;
-    use super::beverages::beverage::HotBeverageOption;
-    use super::beverages::beverage_quantity_checker::BeverageQuantityChecker;
-    use super::beverages::beverage_server::BeverageServer;
-    use super::beverages::sugar_amount::SugarAmount;
-    use super::display::Display;
-    use super::notifier::Notifier;
+pub(crate) mod machine_tests {
     use std::cell::RefCell;
     use std::collections::{HashMap, HashSet};
     use test_case::test_case;
+
+    use crate::machine_system::beverages::{
+        beverage::Beverage, beverage::HotBeverageOption,
+        beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
+        beverage_server::BeverageServer, sugar_amount::SugarAmount,
+    };
+    use crate::machine_system::display::Display;
+    use crate::machine_system::machine_builder::MachineBuilder;
+    use crate::machine_system::notifier::Notifier;
+    use crate::machine_system::reports_printer::{PurchasesReport, ReportsPrinter};
 
     const ENOUGH_MONEY: u32 = 100;
 

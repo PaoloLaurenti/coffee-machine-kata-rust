@@ -1,6 +1,6 @@
 use crate::{
     drink_maker::DrinkMaker,
-    machine::beverages::{
+    machine_system::beverages::{
         beverage::{Beverage, HotBeverageOption},
         beverage_server::BeverageServer,
         sugar_amount::SugarAmount,

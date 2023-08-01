@@ -1,6 +1,5 @@
 use coffee_machine_kata_rust::drink_maker::DrinkMaker;
 use std::cell::RefCell;
-
 pub(crate) struct DrinkMakerTestDouble {
     received_commands: RefCell<Vec<String>>,
 }

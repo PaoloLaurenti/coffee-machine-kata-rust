@@ -11,7 +11,7 @@ use coffee_machine_kata_rust::{
         drink_maker_beverage_server::DrinkMakerBeverageServer,
         drink_maker_display::DrinkMakerDisplay,
     },
-    machine::{
+    machine_system::{
         beverages::{
             beverage::Beverage, beverage::HotBeverageOption,
             beverage_quantity_checker::BeverageQuantityChecker, sugar_amount::SugarAmount, beverage_request::BeverageRequest,
