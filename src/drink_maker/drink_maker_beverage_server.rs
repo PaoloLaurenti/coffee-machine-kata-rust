@@ -1,8 +1,10 @@
 use crate::{
     drink_maker::DrinkMaker,
-    machine::beverage::{Beverage, HotBeverageOption},
-    machine::beverage_server::BeverageServer,
-    machine::sugar_amount::SugarAmount,
+    machine::beverages::{
+        beverage::{Beverage, HotBeverageOption},
+        beverage_server::BeverageServer,
+        sugar_amount::SugarAmount,
+    },
 };
 
 pub struct DrinkMakerBeverageServer<'a> {

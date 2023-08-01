@@ -12,9 +12,12 @@ use coffee_machine_kata_rust::{
         drink_maker_display::DrinkMakerDisplay,
     },
     machine::{
-        beverage::Beverage, beverage::HotBeverageOption,
-        beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
-        machine_builder::MachineBuilder, notifier::Notifier, sugar_amount::SugarAmount,
+        beverages::{
+            beverage::Beverage, beverage::HotBeverageOption,
+            beverage_quantity_checker::BeverageQuantityChecker, sugar_amount::SugarAmount, beverage_request::BeverageRequest,
+        },
+        machine_builder::MachineBuilder,
+        notifier::Notifier,
     },
 };
 use test_case::test_case;
@@ -141,8 +144,7 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
     machine.dispense(beverage_request);
 
     let drink_maker_cmds = drink_maker_spy.spied_received_commands();
-    let missing_beverages_messages =
-        notifier_test_double.spied_missing_beverages_messages();
+    let missing_beverages_messages = notifier_test_double.spied_missing_beverages_messages();
     assert_eq!(
         drink_maker_cmds,
         vec![(String::from(expected_missing_beverage_message))]

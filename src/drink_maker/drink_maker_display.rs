@@ -1,6 +1,6 @@
 use crate::{
     drink_maker::DrinkMaker,
-    machine::{beverage::Beverage, display::Display},
+    machine::{display::Display, beverages::beverage::Beverage},
 };
 
 pub struct DrinkMakerDisplay<'a> {

@@ -1,25 +1,18 @@
 use self::{
-    beverage::Beverage,
-    beverage_request::BeverageRequest,
     cashier::Cashier,
-    dispenser::Dispenser,
     display::Display,
     notifier::Notifier,
     reports_printer::{PurchasesReport, ReportsPrinter},
-    sugar_amount::SugarAmount,
+    beverages::{beverage_request::BeverageRequest, sugar_amount::SugarAmount, beverage::Beverage, dispenser::{Dispenser, self}},
 };
 
-pub mod beverage;
-pub mod beverage_quantity_checker;
-pub mod beverage_request;
-pub mod beverage_server;
+pub mod beverages;
 mod cashier;
-mod dispenser;
 pub mod display;
 pub mod machine_builder;
 pub mod notifier;
 pub mod reports_printer;
-pub mod sugar_amount;
+
 
 pub struct Machine<'a> {
     dispenser: Dispenser<'a>,
@@ -72,14 +65,17 @@ impl Machine<'_> {
 
 #[cfg(test)]
 mod machine_tests {
-    use crate::machine::beverage::HotBeverageOption;
+    use crate::machine::beverages::beverage_request::BeverageRequest;
     use crate::machine::machine_builder::MachineBuilder;
     use crate::machine::reports_printer::{PurchasesReport, ReportsPrinter};
 
-    use super::beverage_quantity_checker::BeverageQuantityChecker;
-    use super::beverage_server::BeverageServer;
+    use super::beverages::beverage::Beverage;
+    use super::beverages::beverage::HotBeverageOption;
+    use super::beverages::beverage_quantity_checker::BeverageQuantityChecker;
+    use super::beverages::beverage_server::BeverageServer;
+    use super::beverages::sugar_amount::SugarAmount;
+    use super::display::Display;
     use super::notifier::Notifier;
-    use super::*;
     use std::cell::RefCell;
     use std::collections::{HashMap, HashSet};
     use test_case::test_case;

@@ -1,7 +1,12 @@
 use super::{
-    beverage_quantity_checker::BeverageQuantityChecker, beverage_server::BeverageServer,
-    cashier::Cashier, dispenser::Dispenser, display::Display, notifier::Notifier,
-    reports_printer::ReportsPrinter, Machine,
+    beverages::{
+        beverage_quantity_checker::BeverageQuantityChecker, beverage_server::BeverageServer, dispenser::Dispenser,
+    },
+    cashier::Cashier,
+    display::Display,
+    notifier::Notifier,
+    reports_printer::ReportsPrinter,
+    Machine,
 };
 
 pub struct MachineBuilder {}

@@ -1,4 +1,4 @@
-use coffee_machine_kata_rust::machine::{beverage::Beverage, notifier::Notifier};
+use coffee_machine_kata_rust::machine::{beverages::beverage::Beverage, notifier::Notifier};
 
 pub(crate) struct DummyNotifier {}
 

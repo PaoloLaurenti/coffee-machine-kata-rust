@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::beverage::Beverage;
+use super::beverages::beverage::Beverage;
 
 pub trait ReportsPrinter {
     fn print(&self, purchase_report: PurchasesReport);
