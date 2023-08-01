@@ -44,7 +44,7 @@ pub(crate) struct Dispenser<'a> {
 impl<'a> Dispenser<'a> {
     pub(crate) fn new(
         beverage_server: &'a dyn BeverageServer,
-        beverage_quantity_checker: &'a impl BeverageQuantityChecker,
+        beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
     ) -> Self {
         Self {
             beverage_server,

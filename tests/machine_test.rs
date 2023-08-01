@@ -12,7 +12,7 @@ use coffee_machine_kata_rust::{
     machine::{
         beverage::Beverage, beverage::HotBeverageOption,
         beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
-        sugar_amount::SugarAmount, Machine,
+        machine_builder::MachineBuilder, sugar_amount::SugarAmount,
     },
 };
 use test_case::test_case;
@@ -45,15 +45,15 @@ fn machine_dispenses_beverage(
 ) {
     let drink_maker_spy = DrinkMakerSpy::new();
     let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
-    let beverage_quantity_checker_always_full = BeverageQuantityCheckerFake::new(false);
+    let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
-    let mut machine = Machine::new(
-        &beverage_server,
-        &beverage_quantity_checker_always_full,
-        &drink_maker_display,
-        &DummyReportsPrinter {},
-        &DummyNotifier {},
-    );
+    let mut machine = MachineBuilder::new()
+        .with_beverage_server(&beverage_server)
+        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
+        .with_display(&drink_maker_display)
+        .with_reports_printer(&DummyReportsPrinter {})
+        .with_notifier(&DummyNotifier {})
+        .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &sugar_amount, ENOUGH_MONEY);
     machine.dispense(beverage_request);
@@ -76,15 +76,15 @@ fn machine_requires_money_to_dispense_beverage(
 ) {
     let drink_maker_spy = DrinkMakerSpy::new();
     let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
-    let beverage_quantity_checker_always_full = BeverageQuantityCheckerFake::new(false);
+    let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
-    let mut machine = Machine::new(
-        &beverage_server,
-        &beverage_quantity_checker_always_full,
-        &drink_maker_display,
-        &DummyReportsPrinter {},
-        &DummyNotifier {},
-    );
+    let mut machine = MachineBuilder::new()
+        .with_beverage_server(&beverage_server)
+        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
+        .with_display(&drink_maker_display)
+        .with_reports_printer(&DummyReportsPrinter {})
+        .with_notifier(&DummyNotifier {})
+        .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
     machine.dispense(beverage_request);
