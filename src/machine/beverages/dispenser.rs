@@ -10,28 +10,17 @@ pub(crate) enum BeverageDispsense {
     Shortage,
 }
 
+#[derive(Default)]
 pub struct DispensedBeveragesHistory {
     pub(crate) quantities: HashMap<Beverage, u32>,
 }
 
 impl DispensedBeveragesHistory {
-    pub fn new() -> Self {
-        Self {
-            quantities: HashMap::new(),
-        }
-    }
-
     pub fn record_dispensed_beverage<'a>(&'a mut self, beverage: &'a Beverage) {
         self.quantities
             .entry(beverage.clone())
             .and_modify(|counter| *counter += 1)
             .or_insert(1);
-    }
-}
-
-impl Default for DispensedBeveragesHistory {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -49,7 +38,7 @@ impl<'a> Dispenser<'a> {
         Self {
             beverage_server,
             beverage_quantity_checker,
-            dispensed_beverages_history: DispensedBeveragesHistory::new(),
+            dispensed_beverages_history: Default::default(),
         }
     }
 

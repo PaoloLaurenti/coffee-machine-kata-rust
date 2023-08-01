@@ -9,6 +9,7 @@ use super::{
     Machine,
 };
 
+#[derive(Default)]
 pub struct MachineBuilder {}
 
 impl MachineBuilder {
@@ -21,12 +22,6 @@ impl MachineBuilder {
         beverage_server: &impl BeverageServer,
     ) -> RequiresBeverageQuantityChecker {
         RequiresBeverageQuantityChecker::new(beverage_server)
-    }
-}
-
-impl Default for MachineBuilder {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

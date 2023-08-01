@@ -13,7 +13,6 @@ pub mod machine_builder;
 pub mod notifier;
 pub mod reports_printer;
 
-
 pub struct Machine<'a> {
     dispenser: Dispenser<'a>,
     cashier: Cashier,
