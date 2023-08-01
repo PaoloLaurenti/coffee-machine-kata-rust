@@ -48,7 +48,7 @@ impl NotifierTestDouble {
         }
     }
 
-    pub(crate) fn spied_missing_beverages_notifications(&self) -> Vec<Beverage> {
+    pub(crate) fn spied_missing_beverages_messages(&self) -> Vec<Beverage> {
         self.missing_beverages_notifications.borrow().clone()
     }
 }
@@ -123,7 +123,7 @@ fn machine_requires_money_to_dispense_beverage(
 }
 
 #[test_case(Beverage::OrangeJuice, "M:Sorry, orange juice is empty." ; "orane juice empty")]
-fn machine_handles_beverage_shortage(beverage: Beverage, expected_notification: &str) {
+fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_beverage_message: &str) {
     let drink_maker_spy = DrinkMakerTestDouble::new();
     let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(true);
@@ -141,11 +141,11 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_notification: 
     machine.dispense(beverage_request);
 
     let drink_maker_cmds = drink_maker_spy.spied_received_commands();
-    let missing_beverages_notifications =
-        notifier_test_double.spied_missing_beverages_notifications();
+    let missing_beverages_messages =
+        notifier_test_double.spied_missing_beverages_messages();
     assert_eq!(
         drink_maker_cmds,
-        vec![(String::from(expected_notification))]
+        vec![(String::from(expected_missing_beverage_message))]
     );
-    assert_eq!(missing_beverages_notifications, vec![Beverage::OrangeJuice]);
+    assert_eq!(missing_beverages_messages, vec![Beverage::OrangeJuice]);
 }
