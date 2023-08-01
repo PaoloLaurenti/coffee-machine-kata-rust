@@ -1,2 +1,2 @@
-# coffee-machine-kata-rust
+# Coffee Machine Kata rust
 Rust implementation of the Coffee Machine Kata
