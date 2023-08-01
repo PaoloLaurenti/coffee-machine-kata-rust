@@ -86,16 +86,33 @@ mod machine_tests {
 
     const ENOUGH_MONEY: u32 = 100;
 
-    pub(crate) struct DummyReportsPrinter {}
-    impl ReportsPrinter for DummyReportsPrinter {
-        fn print(&self, _purchase_report: PurchasesReport) {}
+    pub(crate) struct DummyBeverageServer {}
+    impl BeverageServer for DummyBeverageServer {
+        fn serve(&self, _beverage: &Beverage, _sugar_amount: &SugarAmount) {}
     }
 
-    pub(crate) struct DummyDisplay {}
-    impl Display for DummyDisplay {
-        fn show_missing_money_message(&self, _missing_money: u32) {}
+    struct BeverageServerTestDouble {
+        requested_beverages: RefCell<Vec<(Beverage, SugarAmount)>>,
+    }
 
-        fn show_beverage_shortage_message(&self, _beverage: &Beverage) {}
+    impl BeverageServerTestDouble {
+        fn new() -> Self {
+            Self {
+                requested_beverages: RefCell::new(Vec::new()),
+            }
+        }
+
+        fn spied_requested_beverages(&self) -> Vec<(Beverage, SugarAmount)> {
+            self.requested_beverages.borrow().clone()
+        }
+    }
+
+    impl BeverageServer for BeverageServerTestDouble {
+        fn serve(&self, beverage: &Beverage, sugar_amount: &SugarAmount) {
+            self.requested_beverages
+                .borrow_mut()
+                .push((beverage.clone(), sugar_amount.clone()));
+        }
     }
 
     pub(crate) struct InfiniteBeverageQuantityCheckerFake {}
@@ -136,86 +153,11 @@ mod machine_tests {
         }
     }
 
-    struct ReportsPrinterTestDouble {
-        reports_requested_to_print: RefCell<Vec<PurchasesReport>>,
-    }
+    pub(crate) struct DummyDisplay {}
+    impl Display for DummyDisplay {
+        fn show_missing_money_message(&self, _missing_money: u32) {}
 
-    impl ReportsPrinterTestDouble {
-        fn new() -> ReportsPrinterTestDouble {
-            ReportsPrinterTestDouble {
-                reports_requested_to_print: RefCell::new(vec![]),
-            }
-        }
-
-        fn spied_reports_requested_to_print(&self) -> Vec<PurchasesReport> {
-            self.reports_requested_to_print.borrow().clone()
-        }
-    }
-
-    impl ReportsPrinter for ReportsPrinterTestDouble {
-        fn print(&self, purchase_report: PurchasesReport) {
-            self.reports_requested_to_print
-                .borrow_mut()
-                .push(purchase_report.clone())
-        }
-    }
-
-    struct NotifierTestDouble {
-        missing_beverages_notifications: RefCell<Vec<Beverage>>,
-    }
-
-    impl NotifierTestDouble {
-        fn new() -> NotifierTestDouble {
-            NotifierTestDouble {
-                missing_beverages_notifications: RefCell::new(Vec::new()),
-            }
-        }
-
-        fn spied_missing_beverages_notifications(&self) -> Vec<Beverage> {
-            self.missing_beverages_notifications.borrow().clone()
-        }
-    }
-
-    impl Notifier for NotifierTestDouble {
-        fn notify_missing_beverage(&self, drink: &Beverage) {
-            self.missing_beverages_notifications
-                .borrow_mut()
-                .push(drink.clone())
-        }
-    }
-
-    pub(crate) struct DummyNotifier {}
-    impl Notifier for DummyNotifier {
-        fn notify_missing_beverage(&self, _drink: &Beverage) {}
-    }
-
-    struct BeverageServerTestDouble {
-        requested_beverages: RefCell<Vec<(Beverage, SugarAmount)>>,
-    }
-
-    impl BeverageServerTestDouble {
-        fn new() -> Self {
-            Self {
-                requested_beverages: RefCell::new(Vec::new()),
-            }
-        }
-
-        fn spied_requested_beverages(&self) -> Vec<(Beverage, SugarAmount)> {
-            self.requested_beverages.borrow().clone()
-        }
-    }
-
-    impl BeverageServer for BeverageServerTestDouble {
-        fn serve(&self, beverage: &Beverage, sugar_amount: &SugarAmount) {
-            self.requested_beverages
-                .borrow_mut()
-                .push((beverage.clone(), sugar_amount.clone()));
-        }
-    }
-
-    pub(crate) struct DummyBeverageServer {}
-    impl BeverageServer for DummyBeverageServer {
-        fn serve(&self, _beverage: &Beverage, _sugar_amount: &SugarAmount) {}
+        fn show_beverage_shortage_message(&self, _beverage: &Beverage) {}
     }
 
     struct DisplayTestDouble {
@@ -251,6 +193,64 @@ mod machine_tests {
             self.beverage_shortage_message_request
                 .borrow_mut()
                 .push(beverage.clone());
+        }
+    }
+
+    pub(crate) struct DummyReportsPrinter {}
+    impl ReportsPrinter for DummyReportsPrinter {
+        fn print(&self, _purchase_report: PurchasesReport) {}
+    }
+
+    struct ReportsPrinterTestDouble {
+        reports_requested_to_print: RefCell<Vec<PurchasesReport>>,
+    }
+
+    impl ReportsPrinterTestDouble {
+        fn new() -> ReportsPrinterTestDouble {
+            ReportsPrinterTestDouble {
+                reports_requested_to_print: RefCell::new(vec![]),
+            }
+        }
+
+        fn spied_reports_requested_to_print(&self) -> Vec<PurchasesReport> {
+            self.reports_requested_to_print.borrow().clone()
+        }
+    }
+
+    impl ReportsPrinter for ReportsPrinterTestDouble {
+        fn print(&self, purchase_report: PurchasesReport) {
+            self.reports_requested_to_print
+                .borrow_mut()
+                .push(purchase_report.clone())
+        }
+    }
+
+    pub(crate) struct DummyNotifier {}
+    impl Notifier for DummyNotifier {
+        fn notify_missing_beverage(&self, _drink: &Beverage) {}
+    }
+
+    struct NotifierTestDouble {
+        missing_beverages_notifications: RefCell<Vec<Beverage>>,
+    }
+
+    impl NotifierTestDouble {
+        fn new() -> NotifierTestDouble {
+            NotifierTestDouble {
+                missing_beverages_notifications: RefCell::new(Vec::new()),
+            }
+        }
+
+        fn spied_missing_beverages_notifications(&self) -> Vec<Beverage> {
+            self.missing_beverages_notifications.borrow().clone()
+        }
+    }
+
+    impl Notifier for NotifierTestDouble {
+        fn notify_missing_beverage(&self, drink: &Beverage) {
+            self.missing_beverages_notifications
+                .borrow_mut()
+                .push(drink.clone())
         }
     }
 
