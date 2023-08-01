@@ -1,7 +1,9 @@
 mod common;
 
+use std::cell::RefCell;
+
 use crate::common::{
-    drink_maker_spy::DrinkMakerSpy, dummy_notifier::DummyNotifier,
+    drink_maker_test_double::DrinkMakerTestDouble, dummy_notifier::DummyNotifier,
     dummy_reports_printer::DummyReportsPrinter,
 };
 use coffee_machine_kata_rust::{
@@ -12,7 +14,7 @@ use coffee_machine_kata_rust::{
     machine::{
         beverage::Beverage, beverage::HotBeverageOption,
         beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
-        machine_builder::MachineBuilder, sugar_amount::SugarAmount,
+        machine_builder::MachineBuilder, notifier::Notifier, sugar_amount::SugarAmount,
     },
 };
 use test_case::test_case;
@@ -35,6 +37,30 @@ impl BeverageQuantityChecker for BeverageQuantityCheckerFake {
     }
 }
 
+pub(crate) struct NotifierTestDouble {
+    missing_beverages_notifications: RefCell<Vec<Beverage>>,
+}
+
+impl NotifierTestDouble {
+    pub(crate) fn new() -> NotifierTestDouble {
+        NotifierTestDouble {
+            missing_beverages_notifications: RefCell::new(Vec::new()),
+        }
+    }
+
+    pub(crate) fn spied_missing_beverages_notifications(&self) -> Vec<Beverage> {
+        self.missing_beverages_notifications.borrow().clone()
+    }
+}
+
+impl Notifier for NotifierTestDouble {
+    fn notify_missing_beverage(&self, drink: &Beverage) {
+        self.missing_beverages_notifications
+            .borrow_mut()
+            .push(drink.clone())
+    }
+}
+
 #[test_case(Beverage::Coffee(HotBeverageOption::Standard), SugarAmount::One, "C:1:0" ; "coffee")]
 #[test_case(Beverage::Coffee(HotBeverageOption::ExtraHot), SugarAmount::Zero, "Ch::" ; "extra hot coffee")]
 #[test_case(Beverage::Tea(HotBeverageOption::ExtraHot), SugarAmount::Two, "Th:2:0" ; "extra hot tea")]
@@ -43,10 +69,10 @@ fn machine_dispenses_beverage(
     sugar_amount: SugarAmount,
     expected_drink_maker_cmd: &str,
 ) {
-    let drink_maker_spy = DrinkMakerSpy::new();
-    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
+    let drink_maker_test_double = DrinkMakerTestDouble::new();
+    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
-    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
+    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
     let mut machine = MachineBuilder::new()
         .with_beverage_server(&beverage_server)
         .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
@@ -58,7 +84,7 @@ fn machine_dispenses_beverage(
     let beverage_request = BeverageRequest::new(&beverage, &sugar_amount, ENOUGH_MONEY);
     machine.dispense(beverage_request);
 
-    let drink_maker_cmds = drink_maker_spy.get_received_commands();
+    let drink_maker_cmds = drink_maker_test_double.spied_received_commands();
     assert_eq!(
         drink_maker_cmds,
         vec![(String::from(expected_drink_maker_cmd))]
@@ -74,10 +100,10 @@ fn machine_requires_money_to_dispense_beverage(
     money_amount: u32,
     expected_drink_maker_cmd: &str,
 ) {
-    let drink_maker_spy = DrinkMakerSpy::new();
-    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
+    let drink_maker_test_double = DrinkMakerTestDouble::new();
+    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
-    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
+    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
     let mut machine = MachineBuilder::new()
         .with_beverage_server(&beverage_server)
         .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
@@ -89,9 +115,37 @@ fn machine_requires_money_to_dispense_beverage(
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
     machine.dispense(beverage_request);
 
-    let drink_maker_cmds = drink_maker_spy.get_received_commands();
+    let drink_maker_cmds = drink_maker_test_double.spied_received_commands();
     assert_eq!(
         drink_maker_cmds,
         vec![(String::from(expected_drink_maker_cmd))]
     )
+}
+
+#[test_case(Beverage::OrangeJuice, "M:Sorry, orange juice is empty." ; "orane juice empty")]
+fn machine_handles_beverage_shortage(beverage: Beverage, expected_notification: &str) {
+    let drink_maker_spy = DrinkMakerTestDouble::new();
+    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
+    let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(true);
+    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
+    let notifier_test_double = NotifierTestDouble::new();
+    let mut machine = MachineBuilder::new()
+        .with_beverage_server(&beverage_server)
+        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
+        .with_display(&drink_maker_display)
+        .with_reports_printer(&DummyReportsPrinter {})
+        .with_notifier(&notifier_test_double)
+        .build();
+
+    let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
+    machine.dispense(beverage_request);
+
+    let drink_maker_cmds = drink_maker_spy.spied_received_commands();
+    let missing_beverages_notifications =
+        notifier_test_double.spied_missing_beverages_notifications();
+    assert_eq!(
+        drink_maker_cmds,
+        vec![(String::from(expected_notification))]
+    );
+    assert_eq!(missing_beverages_notifications, vec![Beverage::OrangeJuice]);
 }
