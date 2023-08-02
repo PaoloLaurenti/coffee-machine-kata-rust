@@ -77,7 +77,7 @@ fn machine_dispenses_beverage(
     let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
-    let mut machine = MachineBuilder::new()
+    let mut machine = MachineBuilder::default()
         .with_beverage_server(&beverage_server)
         .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
         .with_display(&drink_maker_display)
@@ -108,7 +108,7 @@ fn machine_requires_money_to_dispense_beverage(
     let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
-    let mut machine = MachineBuilder::new()
+    let mut machine = MachineBuilder::default()
         .with_beverage_server(&beverage_server)
         .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
         .with_display(&drink_maker_display)
@@ -133,7 +133,7 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(true);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
     let notifier_test_double = NotifierTestDouble::new();
-    let mut machine = MachineBuilder::new()
+    let mut machine = MachineBuilder::default()
         .with_beverage_server(&beverage_server)
         .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
         .with_display(&drink_maker_display)

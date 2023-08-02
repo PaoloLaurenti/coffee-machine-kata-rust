@@ -14,10 +14,6 @@ use super::{
 pub struct MachineBuilder {}
 
 impl MachineBuilder {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     pub fn with_beverage_server(
         self,
         beverage_server: &impl BeverageServer,
@@ -150,7 +146,7 @@ mod machine_builder_tests {
 
     #[test]
     fn build_a_machine() {
-        MachineBuilder::new()
+        MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})

@@ -38,9 +38,8 @@ impl Machine<'_> {
     fn handle_dispense(&mut self, beverage: &Beverage, sugar_amount: &SugarAmount) {
         let dispensed = self.dispenser.dispense(beverage, sugar_amount);
 
-        match dispensed {
-            dispenser::BeverageDispsense::Ok => (),
-            dispenser::BeverageDispsense::Shortage => self.handle_beverage_shortage(beverage),
+        if let dispenser::BeverageDispsense::Shortage = dispensed {
+            self.handle_beverage_shortage(beverage)
         }
     }
 
@@ -255,7 +254,7 @@ pub(crate) mod machine_tests {
     #[test_case(Beverage::OrangeJuice; "Orange juice")]
     fn machine_dispenses_beverage_with_no_sugar(beverage: Beverage) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&beverage_server_test_double)
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -277,7 +276,7 @@ pub(crate) mod machine_tests {
     #[test_case(SugarAmount::Two; "two sugars")]
     fn machine_dispenses_beverage_with_sugar(sugar_amount: SugarAmount) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&beverage_server_test_double)
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -311,7 +310,7 @@ pub(crate) mod machine_tests {
         money_amount: u32,
     ) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&beverage_server_test_double)
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -338,7 +337,7 @@ pub(crate) mod machine_tests {
         money_amount: u32,
     ) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&beverage_server_test_double)
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -367,7 +366,7 @@ pub(crate) mod machine_tests {
         missing_money_amount: u32,
     ) {
         let display_test_double = DisplayTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&display_test_double)
@@ -389,7 +388,7 @@ pub(crate) mod machine_tests {
     #[test]
     fn machine_prints_purchases_report() {
         let reports_printer_test_double = ReportsPrinterTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -433,7 +432,7 @@ pub(crate) mod machine_tests {
     #[test_case(Beverage::OrangeJuice)]
     fn machine_shows_shortage_message(beverage: Beverage) {
         let display_test_double = DisplayTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&EmptyBeverageQuantityCheckerFake {})
             .with_display(&display_test_double)
@@ -452,7 +451,7 @@ pub(crate) mod machine_tests {
     #[test]
     fn machine_does_not_dispense_the_requested_beverage_when_there_is_a_shortage() {
         let beverage_server_test_double = BeverageServerTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&beverage_server_test_double)
             .with_beverage_quantity_checker(&EmptyBeverageQuantityCheckerFake {})
             .with_display(&DummyDisplay {})
@@ -478,7 +477,7 @@ pub(crate) mod machine_tests {
         stub_beverage_quantity_checker
             .stub_beverage_as_available(&Beverage::Coffee(HotBeverageOption::Standard));
         stub_beverage_quantity_checker.stub_beverage_as_empty(Beverage::OrangeJuice);
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&stub_beverage_quantity_checker)
             .with_display(&DummyDisplay {})
@@ -519,7 +518,7 @@ pub(crate) mod machine_tests {
         stub_beverage_quantity_checker
             .stub_beverage_as_empty(Beverage::Tea(HotBeverageOption::ExtraHot));
         let notifier_test_double = NotifierTestDouble::new();
-        let mut machine = MachineBuilder::new()
+        let mut machine = MachineBuilder::default()
             .with_beverage_server(&DummyBeverageServer {})
             .with_beverage_quantity_checker(&stub_beverage_quantity_checker)
             .with_display(&DummyDisplay {})
