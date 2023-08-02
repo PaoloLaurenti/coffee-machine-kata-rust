@@ -1,12 +1,13 @@
 use super::{
     beverages::{
-        beverage_quantity_checker::BeverageQuantityChecker, beverage_server::BeverageServer, dispenser::Dispenser,
+        beverage_quantity_checker::BeverageQuantityChecker, beverage_server::BeverageServer,
+        dispenser::Dispenser,
     },
     cashier::Cashier,
     display::Display,
+    machine::Machine,
     notifier::Notifier,
     reports_printer::ReportsPrinter,
-    Machine,
 };
 
 #[derive(Default)]
@@ -140,7 +141,7 @@ impl<'a> MachineBuilderReadyForBuilding<'a> {
 
 #[cfg(test)]
 mod machine_builder_tests {
-    use crate::machine::machine_tests::{
+    use crate::machine_system::machine::machine_tests::{
         DummyBeverageServer, DummyDisplay, DummyNotifier, DummyReportsPrinter,
         InfiniteBeverageQuantityCheckerFake,
     };

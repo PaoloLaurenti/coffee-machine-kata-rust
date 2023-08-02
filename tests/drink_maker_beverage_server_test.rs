@@ -2,8 +2,8 @@ mod common;
 
 use coffee_machine_kata_rust::{
     drink_maker::drink_maker_beverage_server::DrinkMakerBeverageServer,
-    machine::beverages::{beverage::Beverage, sugar_amount::SugarAmount, beverage_server::BeverageServer},
-    machine::beverages::beverage::HotBeverageOption,
+    machine_system::beverages::{beverage::Beverage, sugar_amount::SugarAmount, beverage_server::BeverageServer},
+    machine_system::beverages::beverage::HotBeverageOption,
 };
 use test_case::test_case;
 
