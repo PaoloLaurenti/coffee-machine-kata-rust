@@ -59,9 +59,8 @@ impl Cash {
 
 fn get_beverage_price(beverage: &Beverage) -> u32 {
     match beverage {
-        Beverage::Coffee(_) => 60,
+        Beverage::Coffee(_) | Beverage::OrangeJuice => 60,
         Beverage::Tea(_) => 40,
         Beverage::HotChocolate(_) => 50,
-        Beverage::OrangeJuice => 60,
     }
 }
