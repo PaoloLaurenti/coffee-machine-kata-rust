@@ -14,10 +14,7 @@ use super::{
 pub struct MachineBuilder {}
 
 impl MachineBuilder {
-    pub fn with_beverage_server(
-        self,
-        beverage_server: &impl BeverageServer,
-    ) -> RequiresBeverageQuantityChecker {
+    pub fn set(self, beverage_server: &impl BeverageServer) -> RequiresBeverageQuantityChecker {
         RequiresBeverageQuantityChecker::new(beverage_server)
     }
 }
@@ -31,7 +28,7 @@ impl<'a> RequiresBeverageQuantityChecker<'a> {
         Self { beverage_server }
     }
 
-    pub fn with_beverage_quantity_checker(
+    pub fn set(
         self,
         beverage_quantity_checker: &'a impl BeverageQuantityChecker,
     ) -> RequiresDisplay {
@@ -55,7 +52,7 @@ impl<'a> RequiresDisplay<'a> {
         }
     }
 
-    pub fn with_display(self, display: &'a impl Display) -> RequiresReportsPrinter {
+    pub fn set(self, display: &'a impl Display) -> RequiresReportsPrinter {
         RequiresReportsPrinter::new(self, display)
     }
 }
@@ -75,7 +72,7 @@ impl<'a> RequiresReportsPrinter<'a> {
         }
     }
 
-    pub fn with_reports_printer(self, report_printer: &'a impl ReportsPrinter) -> RequiresNotifier {
+    pub fn set(self, report_printer: &'a impl ReportsPrinter) -> RequiresNotifier {
         RequiresNotifier::new(self, report_printer)
     }
 }
@@ -100,7 +97,7 @@ impl<'a> RequiresNotifier<'a> {
         }
     }
 
-    pub fn with_notifier(self, notifier: &'a impl Notifier) -> MachineBuilderReadyForBuilding {
+    pub fn set(self, notifier: &'a impl Notifier) -> MachineBuilderReadyForBuilding {
         MachineBuilderReadyForBuilding::new(self, notifier)
     }
 }
@@ -147,11 +144,11 @@ mod machine_builder_tests {
     #[test]
     fn build_a_machine() {
         MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&DummyBeverageServer {})
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
     }
 }

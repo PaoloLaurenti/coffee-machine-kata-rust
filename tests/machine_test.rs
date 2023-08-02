@@ -78,11 +78,11 @@ fn machine_dispenses_beverage(
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
     let mut machine = MachineBuilder::default()
-        .with_beverage_server(&beverage_server)
-        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
-        .with_display(&drink_maker_display)
-        .with_reports_printer(&DummyReportsPrinter {})
-        .with_notifier(&DummyNotifier {})
+        .set(&beverage_server)
+        .set(&beverage_quantity_checker_fake_always_full)
+        .set(&drink_maker_display)
+        .set(&DummyReportsPrinter {})
+        .set(&DummyNotifier {})
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &sugar_amount, ENOUGH_MONEY);
@@ -109,11 +109,11 @@ fn machine_requires_money_to_dispense_beverage(
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
     let mut machine = MachineBuilder::default()
-        .with_beverage_server(&beverage_server)
-        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
-        .with_display(&drink_maker_display)
-        .with_reports_printer(&DummyReportsPrinter {})
-        .with_notifier(&DummyNotifier {})
+        .set(&beverage_server)
+        .set(&beverage_quantity_checker_fake_always_full)
+        .set(&drink_maker_display)
+        .set(&DummyReportsPrinter {})
+        .set(&DummyNotifier {})
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -134,11 +134,11 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
     let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
     let notifier_test_double = NotifierTestDouble::new();
     let mut machine = MachineBuilder::default()
-        .with_beverage_server(&beverage_server)
-        .with_beverage_quantity_checker(&beverage_quantity_checker_fake_always_full)
-        .with_display(&drink_maker_display)
-        .with_reports_printer(&DummyReportsPrinter {})
-        .with_notifier(&notifier_test_double)
+        .set(&beverage_server)
+        .set(&beverage_quantity_checker_fake_always_full)
+        .set(&drink_maker_display)
+        .set(&DummyReportsPrinter {})
+        .set(&notifier_test_double)
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);

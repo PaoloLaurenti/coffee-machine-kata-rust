@@ -255,11 +255,11 @@ pub(crate) mod machine_tests {
     fn machine_dispenses_beverage_with_no_sugar(beverage: Beverage) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&beverage_server_test_double)
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&beverage_server_test_double)
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
@@ -277,11 +277,11 @@ pub(crate) mod machine_tests {
     fn machine_dispenses_beverage_with_sugar(sugar_amount: SugarAmount) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&beverage_server_test_double)
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&beverage_server_test_double)
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(
@@ -311,11 +311,11 @@ pub(crate) mod machine_tests {
     ) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&beverage_server_test_double)
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&beverage_server_test_double)
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -338,11 +338,11 @@ pub(crate) mod machine_tests {
     ) {
         let beverage_server_test_double = BeverageServerTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&beverage_server_test_double)
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&beverage_server_test_double)
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -367,11 +367,11 @@ pub(crate) mod machine_tests {
     ) {
         let display_test_double = DisplayTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&display_test_double)
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&DummyBeverageServer {})
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&display_test_double)
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -389,11 +389,11 @@ pub(crate) mod machine_tests {
     fn machine_prints_purchases_report() {
         let reports_printer_test_double = ReportsPrinterTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&InfiniteBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&reports_printer_test_double)
-            .with_notifier(&DummyNotifier {})
+            .set(&DummyBeverageServer {})
+            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&reports_printer_test_double)
+            .set(&DummyNotifier {})
             .build();
         machine.dispense(BeverageRequest::new(
             &Beverage::Coffee(HotBeverageOption::Standard),
@@ -433,11 +433,11 @@ pub(crate) mod machine_tests {
     fn machine_shows_shortage_message(beverage: Beverage) {
         let display_test_double = DisplayTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&EmptyBeverageQuantityCheckerFake {})
-            .with_display(&display_test_double)
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&DummyBeverageServer {})
+            .set(&EmptyBeverageQuantityCheckerFake {})
+            .set(&display_test_double)
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
@@ -452,11 +452,11 @@ pub(crate) mod machine_tests {
     fn machine_does_not_dispense_the_requested_beverage_when_there_is_a_shortage() {
         let beverage_server_test_double = BeverageServerTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&beverage_server_test_double)
-            .with_beverage_quantity_checker(&EmptyBeverageQuantityCheckerFake {})
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&DummyNotifier {})
+            .set(&beverage_server_test_double)
+            .set(&EmptyBeverageQuantityCheckerFake {})
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&DummyNotifier {})
             .build();
 
         let beverage_request = BeverageRequest::new(
@@ -478,11 +478,11 @@ pub(crate) mod machine_tests {
             .stub_beverage_as_available(&Beverage::Coffee(HotBeverageOption::Standard));
         stub_beverage_quantity_checker.stub_beverage_as_empty(Beverage::OrangeJuice);
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&stub_beverage_quantity_checker)
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&reports_printer_test_double)
-            .with_notifier(&DummyNotifier {})
+            .set(&DummyBeverageServer {})
+            .set(&stub_beverage_quantity_checker)
+            .set(&DummyDisplay {})
+            .set(&reports_printer_test_double)
+            .set(&DummyNotifier {})
             .build();
         machine.dispense(BeverageRequest::new(
             &Beverage::Coffee(HotBeverageOption::Standard),
@@ -519,11 +519,11 @@ pub(crate) mod machine_tests {
             .stub_beverage_as_empty(Beverage::Tea(HotBeverageOption::ExtraHot));
         let notifier_test_double = NotifierTestDouble::new();
         let mut machine = MachineBuilder::default()
-            .with_beverage_server(&DummyBeverageServer {})
-            .with_beverage_quantity_checker(&stub_beverage_quantity_checker)
-            .with_display(&DummyDisplay {})
-            .with_reports_printer(&DummyReportsPrinter {})
-            .with_notifier(&notifier_test_double)
+            .set(&DummyBeverageServer {})
+            .set(&stub_beverage_quantity_checker)
+            .set(&DummyDisplay {})
+            .set(&DummyReportsPrinter {})
+            .set(&notifier_test_double)
             .build();
 
         let coffee_beverage_request = BeverageRequest::new(
