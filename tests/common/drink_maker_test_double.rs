@@ -5,8 +5,8 @@ pub(crate) struct DrinkMakerTestDouble {
 }
 
 impl DrinkMakerTestDouble {
-    pub(crate) fn new() -> DrinkMakerTestDouble {
-        DrinkMakerTestDouble {
+    pub(crate) fn new() -> Self {
+        Self {
             received_commands: RefCell::new(vec![]),
         }
     }

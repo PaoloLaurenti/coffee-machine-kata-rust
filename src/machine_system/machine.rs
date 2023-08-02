@@ -198,8 +198,8 @@ pub(crate) mod machine_tests {
     }
 
     impl ReportsPrinterTestDouble {
-        fn new() -> ReportsPrinterTestDouble {
-            ReportsPrinterTestDouble {
+        fn new() -> Self {
+            Self {
                 reports_requested_to_print: RefCell::new(vec![]),
             }
         }
@@ -227,8 +227,8 @@ pub(crate) mod machine_tests {
     }
 
     impl NotifierTestDouble {
-        fn new() -> NotifierTestDouble {
-            NotifierTestDouble {
+        fn new() -> Self {
+            Self {
                 missing_beverages_notifications: RefCell::new(Vec::new()),
             }
         }

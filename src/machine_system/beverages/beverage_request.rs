@@ -6,13 +6,9 @@ pub struct BeverageRequest<'a> {
     pub money_amount: u32,
 }
 
-impl BeverageRequest<'_> {
-    pub fn new<'a>(
-        beverage: &'a Beverage,
-        sugar_amount: &'a SugarAmount,
-        money_amount: u32,
-    ) -> BeverageRequest<'a> {
-        BeverageRequest {
+impl<'a> BeverageRequest<'a> {
+    pub fn new(beverage: &'a Beverage, sugar_amount: &'a SugarAmount, money_amount: u32) -> Self {
+        Self {
             beverage,
             sugar_amount,
             money_amount,

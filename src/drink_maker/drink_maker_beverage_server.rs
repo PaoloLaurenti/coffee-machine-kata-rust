@@ -11,9 +11,9 @@ pub struct DrinkMakerBeverageServer<'a> {
     drink_maker: &'a dyn DrinkMaker,
 }
 
-impl DrinkMakerBeverageServer<'_> {
-    pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerBeverageServer<'_> {
-        DrinkMakerBeverageServer { drink_maker }
+impl<'a> DrinkMakerBeverageServer<'a> {
+    pub fn new(drink_maker: &'a impl DrinkMaker) -> Self {
+        Self { drink_maker }
     }
 }
 

@@ -14,7 +14,8 @@ use coffee_machine_kata_rust::{
     machine_system::{
         beverages::{
             beverage::Beverage, beverage::HotBeverageOption,
-            beverage_quantity_checker::BeverageQuantityChecker, sugar_amount::SugarAmount, beverage_request::BeverageRequest,
+            beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
+            sugar_amount::SugarAmount,
         },
         machine_builder::MachineBuilder,
         notifier::Notifier,
@@ -45,8 +46,8 @@ pub(crate) struct NotifierTestDouble {
 }
 
 impl NotifierTestDouble {
-    pub(crate) fn new() -> NotifierTestDouble {
-        NotifierTestDouble {
+    pub(crate) fn new() -> Self {
+        Self {
             missing_beverages_notifications: RefCell::new(Vec::new()),
         }
     }

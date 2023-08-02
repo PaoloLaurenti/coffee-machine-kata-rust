@@ -1,15 +1,15 @@
 use crate::{
     drink_maker::DrinkMaker,
-    machine_system::{display::Display, beverages::beverage::Beverage},
+    machine_system::{beverages::beverage::Beverage, display::Display},
 };
 
 pub struct DrinkMakerDisplay<'a> {
     drink_maker: &'a dyn DrinkMaker,
 }
 
-impl DrinkMakerDisplay<'_> {
-    pub fn new(drink_maker: &impl DrinkMaker) -> DrinkMakerDisplay {
-        DrinkMakerDisplay { drink_maker }
+impl<'a> DrinkMakerDisplay<'a> {
+    pub fn new(drink_maker: &'a impl DrinkMaker) -> Self {
+        Self { drink_maker }
     }
 }
 
