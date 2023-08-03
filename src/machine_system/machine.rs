@@ -26,10 +26,8 @@ impl Machine<'_> {
             .checkout_payment(beverage_request.beverage, beverage_request.money_amount);
 
         match payment {
-            cashier::BeveragePayment::Ok => {
-                self.handle_dispense(beverage_request.beverage, beverage_request.sugar_amount)
-            }
-            cashier::BeveragePayment::NotEnoughMoney(missing_money_amount) => self
+            Ok(_) => self.handle_dispense(beverage_request.beverage, beverage_request.sugar_amount),
+            Err(cashier::UnsuccessfulPayment::NotEnoughMoney(missing_money_amount)) => self
                 .display
                 .show_missing_money_message(missing_money_amount),
         }

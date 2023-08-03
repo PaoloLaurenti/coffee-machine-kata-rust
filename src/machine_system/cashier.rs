@@ -1,7 +1,6 @@
 use super::beverages::beverage::Beverage;
 
-pub(crate) enum BeveragePayment {
-    Ok,
+pub(crate) enum UnsuccessfulPayment {
     NotEnoughMoney(u32),
 }
 
@@ -18,14 +17,16 @@ impl Cashier {
         &mut self,
         beverage: &Beverage,
         money_amount: u32,
-    ) -> BeveragePayment {
+    ) -> Result<(), UnsuccessfulPayment> {
         let beverage_price = get_beverage_price(beverage);
 
         if money_amount >= beverage_price {
             self.cash.deposit(beverage_price);
-            BeveragePayment::Ok
+            Ok(())
         } else {
-            BeveragePayment::NotEnoughMoney(beverage_price - money_amount)
+            Err(UnsuccessfulPayment::NotEnoughMoney(
+                beverage_price - money_amount,
+            ))
         }
     }
 
