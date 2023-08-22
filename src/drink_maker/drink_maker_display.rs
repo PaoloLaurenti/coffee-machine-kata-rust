@@ -1,19 +1,21 @@
+use std::rc::Rc;
+
 use crate::{
     drink_maker::DrinkMaker,
     machine_system::{beverages::beverage::Beverage, display::Display},
 };
 
-pub struct DrinkMakerDisplay<'a> {
-    drink_maker: &'a dyn DrinkMaker,
+pub struct DrinkMakerDisplay {
+    drink_maker: Rc<dyn DrinkMaker>,
 }
 
-impl<'a> DrinkMakerDisplay<'a> {
-    pub fn new(drink_maker: &'a impl DrinkMaker) -> Self {
+impl DrinkMakerDisplay {
+    pub fn new(drink_maker: Rc<impl DrinkMaker + 'static>) -> Self {
         Self { drink_maker }
     }
 }
 
-impl Display for DrinkMakerDisplay<'_> {
+impl Display for DrinkMakerDisplay {
     fn show_missing_money_message(&self, missing_money: u32) {
         let formatted_missing_money = missing_money as f32 / 100.0;
         self.drink_maker

@@ -47,10 +47,13 @@ impl<'a> Dispenser<'a> {
         beverage: &Beverage,
         sugar_amount: &SugarAmount,
     ) -> BeverageDispsense {
+        dbg!("CIAO");
         if self.beverage_quantity_checker.is_empty(beverage) {
             BeverageDispsense::Shortage
         } else {
+            dbg!("PIPPA");
             self.beverage_server.serve(beverage, sugar_amount);
+            dbg!("PIPPU");
             self.dispensed_beverages_history
                 .record_dispensed_beverage(beverage);
             BeverageDispsense::Ok

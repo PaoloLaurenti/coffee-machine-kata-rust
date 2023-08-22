@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     drink_maker::DrinkMaker,
     machine_system::beverages::{
@@ -7,18 +9,19 @@ use crate::{
     },
 };
 
-pub struct DrinkMakerBeverageServer<'a> {
-    drink_maker: &'a dyn DrinkMaker,
+pub struct DrinkMakerBeverageServer {
+    drink_maker: Rc<dyn DrinkMaker>,
 }
 
-impl<'a> DrinkMakerBeverageServer<'a> {
-    pub fn new(drink_maker: &'a impl DrinkMaker) -> Self {
+impl DrinkMakerBeverageServer {
+    pub fn new(drink_maker: Rc<impl DrinkMaker + 'static>) -> Self {
         Self { drink_maker }
     }
 }
 
-impl BeverageServer for DrinkMakerBeverageServer<'_> {
+impl BeverageServer for DrinkMakerBeverageServer {
     fn serve(&self, beverage: &Beverage, sugar_amount: &SugarAmount) {
+        dbg!("PIPPO");
         let drink_maker_cmd = build_beverage_command(beverage, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd);
     }

@@ -1,15 +1,15 @@
 mod common;
 
+use std::rc::Rc;
+
 use crate::common::{
     drink_maker_test_double::DrinkMakerTestDouble, dummy_notifier::DummyNotifier,
     dummy_reports_printer::DummyReportsPrinter,
 };
 use crate::test_doubles::*;
+use coffee_machine_kata_rust::prelude::DrinkMakerDisplay;
 use coffee_machine_kata_rust::{
-    drink_maker::{
-        drink_maker_beverage_server::DrinkMakerBeverageServer,
-        drink_maker_display::DrinkMakerDisplay,
-    },
+    drink_maker::drink_maker_beverage_server::DrinkMakerBeverageServer,
     machine_system::{
         beverages::{
             beverage::Beverage, beverage::HotBeverageOption, beverage_request::BeverageRequest,
@@ -75,10 +75,10 @@ fn machine_dispenses_beverage(
     sugar_amount: SugarAmount,
     expected_drink_maker_cmd: &str,
 ) {
-    let drink_maker_test_double = DrinkMakerTestDouble::new();
-    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
+    let drink_maker_test_double = Rc::new(DrinkMakerTestDouble::new());
+    let beverage_server = DrinkMakerBeverageServer::new(Rc::clone(&drink_maker_test_double));
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
-    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
+    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double));
     let mut machine = MachineBuilder::default()
         .set(&beverage_server)
         .set(&beverage_quantity_checker_fake_always_full)
@@ -106,10 +106,10 @@ fn machine_requires_money_to_dispense_beverage(
     money_amount: u32,
     expected_drink_maker_cmd: &str,
 ) {
-    let drink_maker_test_double = DrinkMakerTestDouble::new();
-    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_test_double);
+    let drink_maker_test_double = Rc::new(DrinkMakerTestDouble::new());
+    let beverage_server = DrinkMakerBeverageServer::new(Rc::clone(&drink_maker_test_double));
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(false);
-    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_test_double);
+    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double));
     let mut machine = MachineBuilder::default()
         .set(&beverage_server)
         .set(&beverage_quantity_checker_fake_always_full)
@@ -130,10 +130,10 @@ fn machine_requires_money_to_dispense_beverage(
 
 #[test_case(Beverage::OrangeJuice, "M:Sorry, orange juice is empty." ; "orane juice empty")]
 fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_beverage_message: &str) {
-    let drink_maker_spy = DrinkMakerTestDouble::new();
-    let beverage_server = DrinkMakerBeverageServer::new(&drink_maker_spy);
+    let drink_maker_spy = Rc::new(DrinkMakerTestDouble::new());
+    let beverage_server = DrinkMakerBeverageServer::new(Rc::clone(&drink_maker_spy));
     let beverage_quantity_checker_fake_always_full = BeverageQuantityCheckerFake::new(true);
-    let drink_maker_display = DrinkMakerDisplay::new(&drink_maker_spy);
+    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_spy));
     let notifier_test_double = NotifierTestDouble::new();
     let mut machine = MachineBuilder::default()
         .set(&beverage_server)
