@@ -17,7 +17,7 @@ pub struct Machine<'a> {
     pub(crate) dispenser: Dispenser,
     pub(crate) cashier: Cashier,
     pub(crate) display: Rc<dyn Display>,
-    pub(crate) reports_printer: &'a dyn ReportsPrinter,
+    pub(crate) reports_printer: Rc<dyn ReportsPrinter>,
     pub(crate) notifier: &'a dyn Notifier,
 }
 
@@ -259,7 +259,7 @@ pub(crate) mod machine_tests {
             .set(Rc::clone(&beverage_server_test_double))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -281,7 +281,7 @@ pub(crate) mod machine_tests {
             .set(Rc::clone(&beverage_server_test_double))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -315,7 +315,7 @@ pub(crate) mod machine_tests {
             .set(Rc::clone(&beverage_server_test_double))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -342,7 +342,7 @@ pub(crate) mod machine_tests {
             .set(Rc::clone(&beverage_server_test_double))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -371,7 +371,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(DummyBeverageServer {}))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::clone(&display_test_double))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -388,12 +388,12 @@ pub(crate) mod machine_tests {
 
     #[test]
     fn machine_prints_purchases_report() {
-        let reports_printer_test_double = ReportsPrinterTestDouble::new();
+        let reports_printer_test_double = Rc::new(ReportsPrinterTestDouble::new());
         let mut machine = MachineBuilder::default()
             .set(Rc::new(DummyBeverageServer {}))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&reports_printer_test_double)
+            .set(Rc::clone(&reports_printer_test_double))
             .set(&DummyNotifier {})
             .build();
         machine.dispense(BeverageRequest::new(
@@ -437,7 +437,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(DummyBeverageServer {}))
             .set(Rc::new(EmptyBeverageQuantityCheckerFake {}))
             .set(Rc::clone(&display_test_double))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -456,7 +456,7 @@ pub(crate) mod machine_tests {
             .set(Rc::clone(&beverage_server_test_double))
             .set(Rc::new(EmptyBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
 
@@ -473,7 +473,7 @@ pub(crate) mod machine_tests {
 
     #[test]
     fn purchase_report_does_not_contain_beverages_not_dispensed_due_to_a_shortage() {
-        let reports_printer_test_double = ReportsPrinterTestDouble::new();
+        let reports_printer_test_double = Rc::new(ReportsPrinterTestDouble::new());
         let stub_beverage_quantity_checker = Rc::new(BeverageQuantityCheckerTestDouble::new());
         stub_beverage_quantity_checker
             .stub_beverage_as_available(&Beverage::Coffee(HotBeverageOption::Standard));
@@ -482,7 +482,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(DummyBeverageServer {}))
             .set(stub_beverage_quantity_checker)
             .set(Rc::new(DummyDisplay {}))
-            .set(&reports_printer_test_double)
+            .set(Rc::clone(&reports_printer_test_double))
             .set(&DummyNotifier {})
             .build();
         machine.dispense(BeverageRequest::new(
@@ -523,7 +523,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(DummyBeverageServer {}))
             .set(stub_beverage_quantity_checker)
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&notifier_test_double)
             .build();
 

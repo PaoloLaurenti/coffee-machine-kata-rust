@@ -86,7 +86,7 @@ fn machine_dispenses_beverage(
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
-        .set(&DummyReportsPrinter {})
+        .set(Rc::new(DummyReportsPrinter {}))
         .set(&DummyNotifier {})
         .build();
 
@@ -120,7 +120,7 @@ fn machine_requires_money_to_dispense_beverage(
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
-        .set(&DummyReportsPrinter {})
+        .set(Rc::new(DummyReportsPrinter {}))
         .set(&DummyNotifier {})
         .build();
 
@@ -146,7 +146,7 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
-        .set(&DummyReportsPrinter {})
+        .set(Rc::new(DummyReportsPrinter {}))
         .set(&notifier_test_double)
         .build();
 

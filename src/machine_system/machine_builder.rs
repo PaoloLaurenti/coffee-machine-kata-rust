@@ -68,7 +68,7 @@ pub struct RequiresReportsPrinter {
     display: Rc<dyn Display>,
 }
 
-impl<'a> RequiresReportsPrinter {
+impl RequiresReportsPrinter {
     fn new(requires_display: RequiresDisplay, display: Rc<impl Display + 'static>) -> Self {
         Self {
             beverage_server: requires_display.beverage_server,
@@ -77,22 +77,22 @@ impl<'a> RequiresReportsPrinter {
         }
     }
 
-    pub fn set(self, report_printer: &'a impl ReportsPrinter) -> RequiresNotifier {
+    pub fn set(self, report_printer: Rc<impl ReportsPrinter + 'static>) -> RequiresNotifier {
         RequiresNotifier::new(self, report_printer)
     }
 }
 
-pub struct RequiresNotifier<'a> {
+pub struct RequiresNotifier {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: Rc<dyn Display>,
-    reports_printer: &'a dyn ReportsPrinter,
+    reports_printer: Rc<dyn ReportsPrinter>,
 }
 
-impl<'a> RequiresNotifier<'a> {
+impl<'a> RequiresNotifier {
     fn new(
         requires_reports_printer: RequiresReportsPrinter,
-        reports_printer: &'a impl ReportsPrinter,
+        reports_printer: Rc<impl ReportsPrinter + 'static>,
     ) -> Self {
         Self {
             beverage_server: requires_reports_printer.beverage_server,
@@ -111,12 +111,12 @@ pub struct MachineBuilderReadyForBuilding<'a> {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: Rc<dyn Display>,
-    reports_printer: &'a dyn ReportsPrinter,
+    reports_printer: Rc<dyn ReportsPrinter>,
     notifier: &'a dyn Notifier,
 }
 
 impl<'a> MachineBuilderReadyForBuilding<'a> {
-    fn new(requires_notifier: RequiresNotifier<'a>, notifier: &'a impl Notifier) -> Self {
+    fn new(requires_notifier: RequiresNotifier, notifier: &'a impl Notifier) -> Self {
         Self {
             beverage_server: requires_notifier.beverage_server,
             beverage_quantity_checker: requires_notifier.beverage_quantity_checker,
@@ -154,7 +154,7 @@ mod machine_builder_tests {
             .set(Rc::new(DummyBeverageServer {}))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
-            .set(&DummyReportsPrinter {})
+            .set(Rc::new(DummyReportsPrinter {}))
             .set(&DummyNotifier {})
             .build();
     }
