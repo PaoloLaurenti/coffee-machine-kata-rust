@@ -81,11 +81,11 @@ fn machine_dispenses_beverage(
     )));
     let beverage_quantity_checker_fake_always_full =
         Rc::new(BeverageQuantityCheckerFake::new(false));
-    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double));
+    let drink_maker_display = Rc::new(DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double)));
     let mut machine = MachineBuilder::default()
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
-        .set(&drink_maker_display)
+        .set(drink_maker_display)
         .set(&DummyReportsPrinter {})
         .set(&DummyNotifier {})
         .build();
@@ -115,11 +115,11 @@ fn machine_requires_money_to_dispense_beverage(
     )));
     let beverage_quantity_checker_fake_always_full =
         Rc::new(BeverageQuantityCheckerFake::new(false));
-    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double));
+    let drink_maker_display = Rc::new(DrinkMakerDisplay::new(Rc::clone(&drink_maker_test_double)));
     let mut machine = MachineBuilder::default()
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
-        .set(&drink_maker_display)
+        .set(drink_maker_display)
         .set(&DummyReportsPrinter {})
         .set(&DummyNotifier {})
         .build();
@@ -140,12 +140,12 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
     let beverage_server = Rc::new(DrinkMakerBeverageServer::new(Rc::clone(&drink_maker_spy)));
     let beverage_quantity_checker_fake_always_full =
         Rc::new(BeverageQuantityCheckerFake::new(true));
-    let drink_maker_display = DrinkMakerDisplay::new(Rc::clone(&drink_maker_spy));
+    let drink_maker_display = Rc::new(DrinkMakerDisplay::new(Rc::clone(&drink_maker_spy)));
     let notifier_test_double = NotifierTestDouble::new();
     let mut machine = MachineBuilder::default()
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
-        .set(&drink_maker_display)
+        .set(drink_maker_display)
         .set(&DummyReportsPrinter {})
         .set(&notifier_test_double)
         .build();

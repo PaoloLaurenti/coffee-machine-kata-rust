@@ -57,19 +57,19 @@ impl RequiresDisplay {
         }
     }
 
-    pub fn set(self, display: &impl Display) -> RequiresReportsPrinter {
+    pub fn set(self, display: Rc<impl Display + 'static>) -> RequiresReportsPrinter {
         RequiresReportsPrinter::new(self, display)
     }
 }
 
-pub struct RequiresReportsPrinter<'a> {
+pub struct RequiresReportsPrinter {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
-    display: &'a dyn Display,
+    display: Rc<dyn Display>,
 }
 
-impl<'a> RequiresReportsPrinter<'a> {
-    fn new(requires_display: RequiresDisplay, display: &'a impl Display) -> Self {
+impl<'a> RequiresReportsPrinter {
+    fn new(requires_display: RequiresDisplay, display: Rc<impl Display + 'static>) -> Self {
         Self {
             beverage_server: requires_display.beverage_server,
             beverage_quantity_checker: requires_display.beverage_quantity_checker,
@@ -85,13 +85,13 @@ impl<'a> RequiresReportsPrinter<'a> {
 pub struct RequiresNotifier<'a> {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
-    display: &'a dyn Display,
+    display: Rc<dyn Display>,
     reports_printer: &'a dyn ReportsPrinter,
 }
 
 impl<'a> RequiresNotifier<'a> {
     fn new(
-        requires_reports_printer: RequiresReportsPrinter<'a>,
+        requires_reports_printer: RequiresReportsPrinter,
         reports_printer: &'a impl ReportsPrinter,
     ) -> Self {
         Self {
@@ -110,7 +110,7 @@ impl<'a> RequiresNotifier<'a> {
 pub struct MachineBuilderReadyForBuilding<'a> {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
-    display: &'a dyn Display,
+    display: Rc<dyn Display>,
     reports_printer: &'a dyn ReportsPrinter,
     notifier: &'a dyn Notifier,
 }
@@ -153,7 +153,7 @@ mod machine_builder_tests {
         MachineBuilder::default()
             .set(Rc::new(DummyBeverageServer {}))
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
-            .set(&DummyDisplay {})
+            .set(Rc::new(DummyDisplay {}))
             .set(&DummyReportsPrinter {})
             .set(&DummyNotifier {})
             .build();
