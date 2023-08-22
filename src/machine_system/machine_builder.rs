@@ -89,7 +89,7 @@ pub struct RequiresNotifier {
     reports_printer: Rc<dyn ReportsPrinter>,
 }
 
-impl<'a> RequiresNotifier {
+impl RequiresNotifier {
     fn new(
         requires_reports_printer: RequiresReportsPrinter,
         reports_printer: Rc<impl ReportsPrinter + 'static>,
@@ -102,21 +102,21 @@ impl<'a> RequiresNotifier {
         }
     }
 
-    pub fn set(self, notifier: &'a impl Notifier) -> MachineBuilderReadyForBuilding {
+    pub fn set(self, notifier: Rc<impl Notifier + 'static>) -> MachineBuilderReadyForBuilding {
         MachineBuilderReadyForBuilding::new(self, notifier)
     }
 }
 
-pub struct MachineBuilderReadyForBuilding<'a> {
+pub struct MachineBuilderReadyForBuilding {
     beverage_server: Rc<dyn BeverageServer>,
     beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: Rc<dyn Display>,
     reports_printer: Rc<dyn ReportsPrinter>,
-    notifier: &'a dyn Notifier,
+    notifier: Rc<dyn Notifier>,
 }
 
-impl<'a> MachineBuilderReadyForBuilding<'a> {
-    fn new(requires_notifier: RequiresNotifier, notifier: &'a impl Notifier) -> Self {
+impl MachineBuilderReadyForBuilding {
+    fn new(requires_notifier: RequiresNotifier, notifier: Rc<impl Notifier + 'static>) -> Self {
         Self {
             beverage_server: requires_notifier.beverage_server,
             beverage_quantity_checker: requires_notifier.beverage_quantity_checker,
@@ -126,7 +126,7 @@ impl<'a> MachineBuilderReadyForBuilding<'a> {
         }
     }
 
-    pub fn build(self) -> Machine<'a> {
+    pub fn build(self) -> Machine {
         Machine {
             dispenser: Dispenser::new(self.beverage_server, self.beverage_quantity_checker),
             cashier: Cashier::new(),
@@ -155,7 +155,7 @@ mod machine_builder_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
     }
 }

@@ -13,15 +13,15 @@ use super::{
     reports_printer::{PurchasesReport, ReportsPrinter},
 };
 
-pub struct Machine<'a> {
+pub struct Machine {
     pub(crate) dispenser: Dispenser,
     pub(crate) cashier: Cashier,
     pub(crate) display: Rc<dyn Display>,
     pub(crate) reports_printer: Rc<dyn ReportsPrinter>,
-    pub(crate) notifier: &'a dyn Notifier,
+    pub(crate) notifier: Rc<dyn Notifier>,
 }
 
-impl Machine<'_> {
+impl Machine {
     pub fn dispense(&mut self, beverage_request: BeverageRequest) {
         let payment = self
             .cashier
@@ -260,7 +260,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
@@ -282,7 +282,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(
@@ -316,7 +316,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -343,7 +343,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -372,7 +372,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::clone(&display_test_double))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -394,7 +394,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::clone(&reports_printer_test_double))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
         machine.dispense(BeverageRequest::new(
             &Beverage::Coffee(HotBeverageOption::Standard),
@@ -438,7 +438,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(EmptyBeverageQuantityCheckerFake {}))
             .set(Rc::clone(&display_test_double))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
@@ -457,7 +457,7 @@ pub(crate) mod machine_tests {
             .set(Rc::new(EmptyBeverageQuantityCheckerFake {}))
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
 
         let beverage_request = BeverageRequest::new(
@@ -483,7 +483,7 @@ pub(crate) mod machine_tests {
             .set(stub_beverage_quantity_checker)
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::clone(&reports_printer_test_double))
-            .set(&DummyNotifier {})
+            .set(Rc::new(DummyNotifier {}))
             .build();
         machine.dispense(BeverageRequest::new(
             &Beverage::Coffee(HotBeverageOption::Standard),
@@ -518,13 +518,13 @@ pub(crate) mod machine_tests {
         stub_beverage_quantity_checker.stub_beverage_as_empty(Beverage::OrangeJuice);
         stub_beverage_quantity_checker
             .stub_beverage_as_empty(Beverage::Tea(HotBeverageOption::ExtraHot));
-        let notifier_test_double = NotifierTestDouble::new();
+        let notifier_test_double = Rc::new(NotifierTestDouble::new());
         let mut machine = MachineBuilder::default()
             .set(Rc::new(DummyBeverageServer {}))
             .set(stub_beverage_quantity_checker)
             .set(Rc::new(DummyDisplay {}))
             .set(Rc::new(DummyReportsPrinter {}))
-            .set(&notifier_test_double)
+            .set(Rc::clone(&notifier_test_double))
             .build();
 
         let coffee_beverage_request = BeverageRequest::new(

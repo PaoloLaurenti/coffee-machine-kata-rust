@@ -87,7 +87,7 @@ fn machine_dispenses_beverage(
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
         .set(Rc::new(DummyReportsPrinter {}))
-        .set(&DummyNotifier {})
+        .set(Rc::new(DummyNotifier {}))
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &sugar_amount, ENOUGH_MONEY);
@@ -121,7 +121,7 @@ fn machine_requires_money_to_dispense_beverage(
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
         .set(Rc::new(DummyReportsPrinter {}))
-        .set(&DummyNotifier {})
+        .set(Rc::new(DummyNotifier {}))
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, money_amount);
@@ -141,13 +141,13 @@ fn machine_handles_beverage_shortage(beverage: Beverage, expected_missing_bevera
     let beverage_quantity_checker_fake_always_full =
         Rc::new(BeverageQuantityCheckerFake::new(true));
     let drink_maker_display = Rc::new(DrinkMakerDisplay::new(Rc::clone(&drink_maker_spy)));
-    let notifier_test_double = NotifierTestDouble::new();
+    let notifier_test_double = Rc::new(NotifierTestDouble::new());
     let mut machine = MachineBuilder::default()
         .set(beverage_server)
         .set(beverage_quantity_checker_fake_always_full)
         .set(drink_maker_display)
         .set(Rc::new(DummyReportsPrinter {}))
-        .set(&notifier_test_double)
+        .set(Rc::clone(&notifier_test_double))
         .build();
 
     let beverage_request = BeverageRequest::new(&beverage, &SugarAmount::Zero, ENOUGH_MONEY);
