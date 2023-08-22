@@ -29,13 +29,13 @@ pub struct RequiresBeverageQuantityChecker {
 }
 
 impl RequiresBeverageQuantityChecker {
-    fn new(beverage_server: Rc<dyn BeverageServer>) -> Self {
+    fn new(beverage_server: Rc<impl BeverageServer + 'static>) -> Self {
         Self { beverage_server }
     }
 
     pub fn set(
         self,
-        beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
+        beverage_quantity_checker: Rc<impl BeverageQuantityChecker + 'static>,
     ) -> RequiresDisplay {
         RequiresDisplay::new(self, beverage_quantity_checker)
     }
@@ -49,7 +49,7 @@ pub struct RequiresDisplay {
 impl RequiresDisplay {
     fn new(
         requires_beverage_quantity_checker: RequiresBeverageQuantityChecker,
-        beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
+        beverage_quantity_checker: Rc<impl BeverageQuantityChecker + 'static>,
     ) -> Self {
         Self {
             beverage_server: requires_beverage_quantity_checker.beverage_server,
