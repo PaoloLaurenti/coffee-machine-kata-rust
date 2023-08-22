@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use super::{
     beverage::Beverage, beverage_quantity_checker::BeverageQuantityChecker,
@@ -24,16 +24,16 @@ impl DispensedBeveragesHistory {
     }
 }
 
-pub(crate) struct Dispenser<'a> {
-    beverage_server: &'a dyn BeverageServer,
-    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+pub(crate) struct Dispenser {
+    beverage_server: Rc<dyn BeverageServer>,
+    beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     dispensed_beverages_history: DispensedBeveragesHistory,
 }
 
-impl<'a> Dispenser<'a> {
+impl Dispenser {
     pub(crate) fn new(
-        beverage_server: &'a dyn BeverageServer,
-        beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+        beverage_server: Rc<dyn BeverageServer>,
+        beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     ) -> Self {
         Self {
             beverage_server,
@@ -47,13 +47,10 @@ impl<'a> Dispenser<'a> {
         beverage: &Beverage,
         sugar_amount: &SugarAmount,
     ) -> BeverageDispsense {
-        dbg!("CIAO");
         if self.beverage_quantity_checker.is_empty(beverage) {
             BeverageDispsense::Shortage
         } else {
-            dbg!("PIPPA");
             self.beverage_server.serve(beverage, sugar_amount);
-            dbg!("PIPPU");
             self.dispensed_beverages_history
                 .record_dispensed_beverage(beverage);
             BeverageDispsense::Ok

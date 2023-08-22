@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use super::{
     beverages::{
         beverage_quantity_checker::BeverageQuantityChecker, beverage_server::BeverageServer,
@@ -14,37 +16,40 @@ use super::{
 pub struct MachineBuilder {}
 
 impl MachineBuilder {
-    pub fn set(self, beverage_server: &impl BeverageServer) -> RequiresBeverageQuantityChecker {
+    pub fn set(
+        self,
+        beverage_server: Rc<impl BeverageServer + 'static>,
+    ) -> RequiresBeverageQuantityChecker {
         RequiresBeverageQuantityChecker::new(beverage_server)
     }
 }
 
-pub struct RequiresBeverageQuantityChecker<'a> {
-    beverage_server: &'a dyn BeverageServer,
+pub struct RequiresBeverageQuantityChecker {
+    beverage_server: Rc<dyn BeverageServer>,
 }
 
-impl<'a> RequiresBeverageQuantityChecker<'a> {
-    fn new(beverage_server: &'a impl BeverageServer) -> Self {
+impl RequiresBeverageQuantityChecker {
+    fn new(beverage_server: Rc<dyn BeverageServer>) -> Self {
         Self { beverage_server }
     }
 
     pub fn set(
         self,
-        beverage_quantity_checker: &'a impl BeverageQuantityChecker,
+        beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     ) -> RequiresDisplay {
         RequiresDisplay::new(self, beverage_quantity_checker)
     }
 }
 
-pub struct RequiresDisplay<'a> {
-    beverage_server: &'a dyn BeverageServer,
-    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+pub struct RequiresDisplay {
+    beverage_server: Rc<dyn BeverageServer>,
+    beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
 }
 
-impl<'a> RequiresDisplay<'a> {
+impl RequiresDisplay {
     fn new(
-        requires_beverage_quantity_checker: RequiresBeverageQuantityChecker<'a>,
-        beverage_quantity_checker: &'a impl BeverageQuantityChecker,
+        requires_beverage_quantity_checker: RequiresBeverageQuantityChecker,
+        beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     ) -> Self {
         Self {
             beverage_server: requires_beverage_quantity_checker.beverage_server,
@@ -52,19 +57,19 @@ impl<'a> RequiresDisplay<'a> {
         }
     }
 
-    pub fn set(self, display: &'a impl Display) -> RequiresReportsPrinter {
+    pub fn set(self, display: &impl Display) -> RequiresReportsPrinter {
         RequiresReportsPrinter::new(self, display)
     }
 }
 
 pub struct RequiresReportsPrinter<'a> {
-    beverage_server: &'a dyn BeverageServer,
-    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+    beverage_server: Rc<dyn BeverageServer>,
+    beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: &'a dyn Display,
 }
 
 impl<'a> RequiresReportsPrinter<'a> {
-    fn new(requires_display: RequiresDisplay<'a>, display: &'a impl Display) -> Self {
+    fn new(requires_display: RequiresDisplay, display: &'a impl Display) -> Self {
         Self {
             beverage_server: requires_display.beverage_server,
             beverage_quantity_checker: requires_display.beverage_quantity_checker,
@@ -78,8 +83,8 @@ impl<'a> RequiresReportsPrinter<'a> {
 }
 
 pub struct RequiresNotifier<'a> {
-    beverage_server: &'a dyn BeverageServer,
-    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+    beverage_server: Rc<dyn BeverageServer>,
+    beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: &'a dyn Display,
     reports_printer: &'a dyn ReportsPrinter,
 }
@@ -103,8 +108,8 @@ impl<'a> RequiresNotifier<'a> {
 }
 
 pub struct MachineBuilderReadyForBuilding<'a> {
-    beverage_server: &'a dyn BeverageServer,
-    beverage_quantity_checker: &'a dyn BeverageQuantityChecker,
+    beverage_server: Rc<dyn BeverageServer>,
+    beverage_quantity_checker: Rc<dyn BeverageQuantityChecker>,
     display: &'a dyn Display,
     reports_printer: &'a dyn ReportsPrinter,
     notifier: &'a dyn Notifier,
@@ -134,6 +139,8 @@ impl<'a> MachineBuilderReadyForBuilding<'a> {
 
 #[cfg(test)]
 mod machine_builder_tests {
+    use std::rc::Rc;
+
     use crate::machine_system::machine::machine_tests::{
         DummyBeverageServer, DummyDisplay, DummyNotifier, DummyReportsPrinter,
         InfiniteBeverageQuantityCheckerFake,
@@ -144,8 +151,8 @@ mod machine_builder_tests {
     #[test]
     fn build_a_machine() {
         MachineBuilder::default()
-            .set(&DummyBeverageServer {})
-            .set(&InfiniteBeverageQuantityCheckerFake {})
+            .set(Rc::new(DummyBeverageServer {}))
+            .set(Rc::new(InfiniteBeverageQuantityCheckerFake {}))
             .set(&DummyDisplay {})
             .set(&DummyReportsPrinter {})
             .set(&DummyNotifier {})

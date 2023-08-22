@@ -21,7 +21,6 @@ impl DrinkMakerBeverageServer {
 
 impl BeverageServer for DrinkMakerBeverageServer {
     fn serve(&self, beverage: &Beverage, sugar_amount: &SugarAmount) {
-        dbg!("PIPPO");
         let drink_maker_cmd = build_beverage_command(beverage, sugar_amount);
         self.drink_maker.execute(drink_maker_cmd);
     }
