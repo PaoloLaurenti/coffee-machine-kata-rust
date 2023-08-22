@@ -1,11 +1,10 @@
 mod common;
 
-use std::cell::RefCell;
-
 use crate::common::{
     drink_maker_test_double::DrinkMakerTestDouble, dummy_notifier::DummyNotifier,
     dummy_reports_printer::DummyReportsPrinter,
 };
+use crate::test_doubles::*;
 use coffee_machine_kata_rust::{
     drink_maker::{
         drink_maker_beverage_server::DrinkMakerBeverageServer,
@@ -13,55 +12,58 @@ use coffee_machine_kata_rust::{
     },
     machine_system::{
         beverages::{
-            beverage::Beverage, beverage::HotBeverageOption,
-            beverage_quantity_checker::BeverageQuantityChecker, beverage_request::BeverageRequest,
+            beverage::Beverage, beverage::HotBeverageOption, beverage_request::BeverageRequest,
             sugar_amount::SugarAmount,
         },
         machine_builder::MachineBuilder,
-        notifier::Notifier,
     },
 };
 use test_case::test_case;
 
-const ENOUGH_MONEY: u32 = 100;
+mod test_doubles {
+    use coffee_machine_kata_rust::prelude::{Beverage, BeverageQuantityChecker, Notifier};
+    use std::cell::RefCell;
 
-struct BeverageQuantityCheckerFake {
-    always_empty: bool,
-}
+    pub(crate) const ENOUGH_MONEY: u32 = 100;
 
-impl BeverageQuantityCheckerFake {
-    pub(crate) fn new(always_empty: bool) -> Self {
-        Self { always_empty }
+    pub(crate) struct BeverageQuantityCheckerFake {
+        always_empty: bool,
     }
-}
 
-impl BeverageQuantityChecker for BeverageQuantityCheckerFake {
-    fn is_empty(&self, _beverage: &Beverage) -> bool {
-        self.always_empty
-    }
-}
-
-pub(crate) struct NotifierTestDouble {
-    missing_beverages_notifications: RefCell<Vec<Beverage>>,
-}
-
-impl NotifierTestDouble {
-    pub(crate) fn new() -> Self {
-        Self {
-            missing_beverages_notifications: RefCell::new(Vec::new()),
+    impl BeverageQuantityCheckerFake {
+        pub(crate) fn new(always_empty: bool) -> Self {
+            Self { always_empty }
         }
     }
 
-    pub(crate) fn spied_missing_beverages_messages(&self) -> Vec<Beverage> {
-        self.missing_beverages_notifications.borrow().clone()
+    impl BeverageQuantityChecker for BeverageQuantityCheckerFake {
+        fn is_empty(&self, _beverage: &Beverage) -> bool {
+            self.always_empty
+        }
     }
-}
 
-impl Notifier for NotifierTestDouble {
-    fn notify_missing_beverage(&self, drink: &Beverage) {
-        self.missing_beverages_notifications
-            .borrow_mut()
-            .push(drink.clone())
+    pub(crate) struct NotifierTestDouble {
+        missing_beverages_notifications: RefCell<Vec<Beverage>>,
+    }
+
+    impl NotifierTestDouble {
+        pub(crate) fn new() -> Self {
+            Self {
+                missing_beverages_notifications: RefCell::new(Vec::new()),
+            }
+        }
+
+        pub(crate) fn spied_missing_beverages_messages(&self) -> Vec<Beverage> {
+            self.missing_beverages_notifications.borrow().clone()
+        }
+    }
+
+    impl Notifier for NotifierTestDouble {
+        fn notify_missing_beverage(&self, drink: &Beverage) {
+            self.missing_beverages_notifications
+                .borrow_mut()
+                .push(drink.clone())
+        }
     }
 }
 
